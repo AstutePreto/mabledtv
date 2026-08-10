@@ -1,0 +1,472 @@
+const m3uUrl = "https://raw.githubusercontent.com/ManoLimah/Manoteste/refs/heads/main/ManoTV.m3u";
+const proxyBases = [
+  "https://api.allorigins.win/raw?url=",
+  "https://cors-anywhere.herokuapp.com/",
+  "https://thingproxy.freeboard.io/fetch/",
+  "https://corsproxy.org/?",
+  "https://proxy.cors.sh/",
+  "https://corsproxy.io/?",
+  "https://api.codetabs.com/v1/proxy?quest=",
+  "https://cors-proxy.htmldriven.com/?url=",
+  "https://jsonp.afeld.me/?url=",
+  "https://cors.eu.org/",
+  "https://scrappy-cors.herokuapp.com/"
+];
+
+const knownGroups = [
+  "Canais | ABERTO", "Canais | REALITY", "Canais | RECORD TV", "Canais | BAND TV", "Canais | SBT",
+  "CANAIS SporTV", "CANAIS ESPN", "CANAIS ESPORTES", "CANAIS LUTAS", "CANAIS PREMIERE",
+  "ao vivo | BRASILEIRÃO", "AO VIVO | LIBERTADORES", "ao vivo | COPA DO BRASIL", "Canais | ESPORTES FREE",
+  "CANAIS | MAX", "REPRISE", "AO VIVO AGORA", "Canais | Noticias", "Canais | VARIEDADES",
+  "Canais | NOVELAS", "Canais | FILMES E SERIES", "CANAIS SOUTH PARK", "CANAIS RUNTIME & PLUTO FILMES",
+  "Canais | FILMES", "Canais | SÉRIES", "Canais | ANIMES", "Canais | INFANTIL", "Canais | MÚSICA",
+  "RÁDIOS", "Canais | COMÉDIA", "TV ABERTA", "Canais | INTERNACIONAL", "FILMES"
+];
+
+const channelsList = document.getElementById('channelsList');
+const categoriesSidebar = document.getElementById('categoriesSidebar');
+const videoPlayer = document.getElementById('videoPlayer');
+const searchInput = document.getElementById('searchInput');
+const errorToast = document.getElementById('errorToast');
+const errorMessage = document.getElementById('errorMessage');
+const loadingIndicator = document.getElementById('loadingIndicator');
+
+let channels = [];
+let hls; 
+let dashPlayer; 
+let activeCategory = "Todos"; 
+
+// --- GERENCIAMENTO DE CONTAS E FAVORITOS ---
+// Define qual conta está ativa por padrão (mude dinamicamente se tiver um seletor de perfil)
+let currentAccount = localStorage.getItem('manoTV_currentAccount') || "Conta_Padrao";
+// Carrega o banco de dados de favoritos de todas as contas
+let allAccountsFavorites = JSON.parse(localStorage.getItem('manoTV_accounts_favorites')) || {};
+// Garante que a conta atual possua um array de favoritos iniciado
+if (!allAccountsFavorites[currentAccount]) {
+  allAccountsFavorites[currentAccount] = [];
+}
+
+let currentAttemptIndex = -2; 
+let proxyTimeoutTimer = null;
+let currentChannelData = null;
+
+function normalizeGroup(group) {
+  if (!group) return "Geral";
+  group = group.trim();
+  if (group.includes("|")) {
+    const parts = group.split("|").map(p => p.trim());
+    if (parts[0] === "Canais") {
+      return "Canais | " + parts[1];
+    } else if (["Dorama", "Série", "Anime", "Reality"].includes(parts[0])) {
+      return parts[1];
+    }
+  }
+  const matched = knownGroups.find(kg => kg.toLowerCase() === group.toLowerCase());
+  return matched || group;
+}
+
+async function loadM3U() {
+  try {
+    const res = await fetch(m3uUrl);
+    if (res.ok) {
+      const content = await res.text();
+      parseM3U(content);
+      return;
+    }
+  } catch (err) {
+    console.log("Carregamento direto da lista falhou:", err.message);
+  }
+
+  for (let proxyBase of proxyBases) {
+    try {
+      const proxyUrl = proxyBase + encodeURIComponent(m3uUrl);
+      const res = await fetch(proxyUrl);
+      if (res.ok) {
+        const content = await res.text();
+        parseM3U(content);
+        return;
+      }
+    } catch (err) {
+      console.log("Proxy falhou ao baixar M3U:", proxyBase, err.message);
+    }
+  }
+  showError("Erro ao baixar lista IPTV: Todos os métodos falharam");
+}
+
+loadM3U();
+
+function parseM3U(content) {
+  const lines = content.split("\n");
+  channels = [];
+  let currentGroup = "Geral";
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (line && line.startsWith("#") && line.includes("############################################################################") && !line.startsWith("#EXTINF")) {
+      const parts = line.split("############################################################################");
+      if (parts.length > 1) {
+        currentGroup = parts[1].trim();
+      }
+    } else if (line.startsWith("#EXTINF:")) {
+      const info = parseExtinf(line);
+      const url = lines[i + 1] ? lines[i + 1].trim() : null;
+      if (url) {
+        let group = info.groupTitle ? info.groupTitle : currentGroup;
+        group = normalizeGroup(group);
+
+        channels.push({
+          name: info.name || `Canal ${channels.length + 1}`,
+          url: url,
+          logo: info["tvg-logo"] || info.tvgLogo || "",
+          tvgId: info["tvg-id"] || info.tvgId || "",
+          group: group
+        });
+      }
+    }
+  }
+
+  if (channels.length === 0) {
+    showError("Nenhum canal válido encontrado.");
+  } else {
+    generateSidebarCategories();
+    displayChannels(channels);
+    
+    if (channels[0]) {
+      playChannel(channels[0].url, channels[0].name, channels[0].tvgId);
+      setTimeout(() => {
+        document.querySelector(".channel-item")?.classList.add("active");
+      }, 400);
+    }
+  }
+}
+
+function parseExtinf(line) {
+  const info = {};
+  const tvgRegex = /([a-zA-Z0-9-][a-zA-Z0-9_-]*)="([^"]*)"/g;
+  let match;
+  while ((match = tvgRegex.exec(line)) !== null) {
+    info[match[1]] = match[2];
+  }
+  const lastComma = line.lastIndexOf(",");
+  if (lastComma > 0) {
+    info.name = line.substring(lastComma + 1).trim();
+  }
+  return info;
+}
+
+function generateSidebarCategories() {
+  if (!categoriesSidebar) return;
+  
+  // Captura os botões fixos iniciais se houverem no HTML (ex: Botão "Todos")
+  const btnTodos = document.getElementById('btnTodos');
+  categoriesSidebar.innerHTML = "";
+  if (btnTodos) categoriesSidebar.appendChild(btnTodos);
+
+  // 1. Inserir botão de "Favoritos" no início da barra
+  const favBtn = document.createElement("button");
+  favBtn.className = "category-btn " + (activeCategory === "Favoritos" ? "active" : "");
+  favBtn.innerHTML = "⭐ Favoritos";
+  favBtn.id = "btnFavoritos";
+  favBtn.addEventListener("click", () => {
+    document.querySelectorAll(".category-btn").forEach(b => b.classList.remove("active"));
+    favBtn.classList.add("active");
+    activeCategory = "Favoritos";
+    filtrarGradeCanais();
+  });
+  categoriesSidebar.appendChild(favBtn);
+
+  const uniqueGroups = [...new Set(channels.map(c => c.group))];
+  
+  knownGroups.forEach(groupName => {
+    if (uniqueGroups.includes(groupName)) {
+      createCategoryButton(groupName);
+    }
+  });
+
+  uniqueGroups.forEach(groupName => {
+    if (!knownGroups.includes(groupName) && groupName !== "Geral") {
+      createCategoryButton(groupName);
+    }
+  });
+}
+
+function createCategoryButton(groupName) {
+  const btn = document.createElement("button");
+  btn.className = "category-btn " + (activeCategory === groupName ? "active" : "");
+  btn.innerHTML = ` ${groupName}`;
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".category-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    activeCategory = groupName;
+    filtrarGradeCanais();
+  });
+  categoriesSidebar.appendChild(btn);
+}
+
+document.getElementById('btnTodos')?.addEventListener('click', () => {
+  document.querySelectorAll(".category-btn").forEach(b => b.classList.remove("active"));
+  document.getElementById('btnTodos').classList.add('active');
+  activeCategory = "Todos";
+  filtrarGradeCanais();
+});
+
+function filtrarGradeCanais() {
+  const term = searchInput ? searchInput.value.toLowerCase() : "";
+  let filtered = channels;
+
+  // Filtra por favoritos da conta atual
+  if (activeCategory === "Favoritos") {
+    const currentFavs = allAccountsFavorites[currentAccount] || [];
+    filtered = filtered.filter(c => currentFavs.includes(c.url));
+  } else if (activeCategory !== "Todos") {
+    filtered = filtered.filter(c => c.group === activeCategory);
+  }
+
+  if (term) {
+    filtered = filtered.filter(c => c.name.toLowerCase().includes(term));
+  }
+
+  displayChannels(filtered);
+}
+
+function displayChannels(channelsToDisplay) {
+  channelsList.innerHTML = "";
+
+  if (channelsToDisplay.length === 0) {
+    channelsList.innerHTML = '<div class="col-span-full text-center py-12 text-gray-500"><p>Nenhum canal encontrado.</p></div>';
+    return;
+  }
+
+  const currentFavs = allAccountsFavorites[currentAccount] || [];
+
+  channelsToDisplay.forEach(channel => {
+    const item = document.createElement("div");
+    item.className = "channel-item";
+    
+    const isFav = currentFavs.includes(channel.url);
+    const logoUrl = channel.logo ? channel.logo : "https://via.placeholder.com/44x44/8b7d73/ffffff?text=TV";
+    
+    // Injeta a estrutura HTML incluindo o botão de estrela (.btn-fav)
+    item.innerHTML = `
+      <img src="${logoUrl}" crossorigin="anonymous" onerror="this.src='https://via.placeholder.com/44x44/73675e/ffffff?text=TV'">
+      <div class="channel-item-name">${channel.name}</div>
+      <button class="btn-fav ${isFav ? 'active' : ''}" title="Adicionar aos favoritos">★</button>
+    `;
+    
+    // Ação ao clicar no canal (reproduzir)
+    item.addEventListener("click", (e) => {
+      if (e.target.classList.contains('btn-fav')) return; // Impede abrir o canal se clicar na estrela
+      playChannel(channel.url, channel.name, channel.tvgId);
+      document.querySelectorAll(".channel-item").forEach(i => i.classList.remove("active"));
+      item.classList.add("active");
+    });
+
+    // Ação ao clicar no botão de estrela
+    const btnFav = item.querySelector('.btn-fav');
+    btnFav.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleFavorite(channel.url);
+    });
+
+    channelsList.appendChild(item);
+  });
+}
+
+function toggleFavorite(url) {
+  if (!allAccountsFavorites[currentAccount]) {
+    allAccountsFavorites[currentAccount] = [];
+  }
+
+  let currentFavs = allAccountsFavorites[currentAccount];
+
+  if (currentFavs.includes(url)) {
+    // Se já estiver favoritado, remove
+    allAccountsFavorites[currentAccount] = currentFavs.filter(favUrl => favUrl !== url);
+  } else {
+    // Se não estiver, adiciona
+    allAccountsFavorites[currentAccount].push(url);
+  }
+
+  // Grava as alterações de todas as contas no localStorage
+  localStorage.setItem('manoTV_accounts_favorites', JSON.stringify(allAccountsFavorites));
+  
+  // Atualiza dinamicamente a lista na tela
+  filtrarGradeCanais();
+}
+
+// Opcional: Função utilitária para mudar de conta/perfil no app
+function mudarDeConta(nomeNovaConta) {
+  currentAccount = nomeNovaConta;
+  localStorage.setItem('manoTV_currentAccount', nomeNovaConta);
+  if (!allAccountsFavorites[currentAccount]) {
+    allAccountsFavorites[currentAccount] = [];
+  }
+  filtrarGradeCanais();
+}
+
+// --- REPRODUÇÃO MULTI-ESTRATÉGIA OTIMIZADA ---
+
+function playChannel(url, channelName = "", tvgId = "") {
+  if (channelName && typeof atualizarEPGPorNome === 'function') {
+    atualizarEPGPorNome(channelName, tvgId);
+  }
+
+  currentChannelData = { url, channelName, tvgId };
+  currentAttemptIndex = -2;
+  tentarReproduzir();
+}
+
+function atualizarStatusLoading(mensagem) {
+  if (loadingIndicator) {
+    let statusText = loadingIndicator.querySelector('.loading-text-status');
+    if (!statusText) {
+      statusText = document.createElement('p');
+      statusText.className = 'loading-text-status text-xs text-amber-400 mt-2 font-medium text-center';
+      loadingIndicator.appendChild(statusText);
+    }
+    statusText.textContent = message = mensagem;
+  }
+}
+
+function tentarReproduzir() {
+  if (!currentChannelData) return;
+
+  const { url } = currentChannelData;
+  limparPlayers();
+
+  loadingIndicator.classList.remove("hidden");
+  videoPlayer.style.display = "none";
+
+  let targetUrl = url;
+  let statusMessage = "";
+
+  if (currentAttemptIndex === -2) {
+    statusMessage = "Conectando via Player Nativo...";
+  } else if (currentAttemptIndex === -1) {
+    statusMessage = "Conectando via HLS Engine (Sem Proxy)...";
+  } else {
+    targetUrl = proxyBases[currentAttemptIndex] + encodeURIComponent(url);
+    statusMessage = `Tentando Proxy ${currentAttemptIndex + 1} de ${proxyBases.length}...`;
+  }
+
+  atualizarStatusLoading(statusMessage);
+
+  proxyTimeoutTimer = setTimeout(() => {
+    showError("Tempo esgotado (7s). Alternando método...");
+    irParaProximoMetodo();
+  }, 7000);
+
+  const urlLower = url.toLowerCase();
+  const isDASH = urlLower.includes(".mpd") || urlLower.includes("dash");
+
+  try {
+    if (currentAttemptIndex === -2 && !isDASH) {
+      videoPlayer.removeAttribute("crossorigin");
+      videoPlayer.src = targetUrl;
+      videoPlayer.load();
+
+      videoPlayer.onloadeddata = sucessoPlay;
+      videoPlayer.onplaying = Platform = sucessoPlay;
+      
+      videoPlayer.onerror = () => {
+        setTimeout(() => {
+          if (videoPlayer.paused && videoPlayer.readyState === 0) {
+            irParaProximoMetodo();
+          }
+        }, 1000);
+      };
+      return;
+    }
+
+    if (isDASH && typeof dashjs !== "undefined") {
+      dashPlayer = dashjs.MediaPlayer().create();
+      dashPlayer.initialize(videoPlayer, targetUrl, false);
+      
+      dashPlayer.on(dashjs.MediaPlayer.events.STREAM_INITIALIZED, sucessoPlay);
+      dashPlayer.on(dashjs.MediaPlayer.events.ERROR, irParaProximoMetodo);
+      return;
+    }
+
+    if (typeof Hls !== "undefined" && Hls.isSupported()) {
+      hls = new Hls({
+        enableWorker: true,
+        lowLatencyMode: true,
+        manifestLoadingTimeOut: 5000,
+        levelLoadingTimeOut: 5000,
+        fragLoadingTimeOut: 5000,
+        autoStartLoad: true,
+        capLevelToPlayerSize: false,
+        xhrSetup: function(xhr) {
+          xhr.withCredentials = false;
+        }
+      });
+
+      hls.loadSource(targetUrl);
+      hls.attachMedia(videoPlayer);
+
+      hls.on(Hls.Events.MANIFEST_PARSED, function(event, data) {
+        if (data.levels && data.levels.length > 0) {
+          hls.currentLevel = data.levels.length - 1;
+        }
+        sucessoPlay();
+      });
+
+      hls.on(Hls.Events.ERROR, function(event, data) {
+        if (data.fatal) {
+          irParaProximoMetodo();
+        }
+      });
+    } else {
+      videoPlayer.src = targetUrl;
+      videoPlayer.load();
+      videoPlayer.onloadeddata = sucessoPlay;
+      videoPlayer.onerror = irParaProximoMetodo;
+    }
+  } catch (err) {
+    irParaProximoMetodo();
+  }
+}
+
+function sucessoPlay() {
+  clearTimeout(proxyTimeoutTimer);
+  loadingIndicator.classList.add("hidden");
+  videoPlayer.style.display = "block";
+  videoPlayer.play().catch(() => {});
+}
+
+function irParaProximoMetodo() {
+  clearTimeout(proxyTimeoutTimer);
+  limparPlayers();
+
+  currentAttemptIndex++;
+
+  if (currentAttemptIndex < proxyBases.length) {
+    tentarReproduzir();
+  } else {
+    loadingIndicator.classList.add("hidden");
+    videoPlayer.style.display = "block";
+    showError("Não foi possível carregar o canal. Todos os métodos e proxies falharam.");
+  }
+}
+
+function limparPlayers() {
+  if (proxyTimeoutTimer) clearTimeout(proxyTimeoutTimer);
+  
+  videoPlayer.onloadeddata = null;
+  videoPlayer.onplaying = null;
+  videoPlayer.onerror = null;
+
+  if (hls) { hls.destroy(); hls = null; }
+  if (dashPlayer) { dashPlayer.reset(); dashPlayer = null; }
+  videoPlayer.src = "";
+}
+
+function showError(msg) {
+  errorMessage.textContent = msg;
+  errorToast.classList.remove("hidden");
+  setTimeout(() => errorToast.classList.add("hidden"), 4000);
+}
+
+if (searchInput) {
+  searchInput.addEventListener("input", filtrarGradeCanais);
+}
