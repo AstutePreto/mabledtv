@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Minha Conta</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap" rel="stylesheet">
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
+  <style>
+    * {
+      font-family: "DM Sans", sans-serif;
+      box-sizing: border-box;
+    }
+    body {
+      background-color: #000000;
+      color: #ffffff;
+      margin: 0;
+      padding: 0;
+    }
+    
+    .text-custom-size {
+      font-size: 11.2px !important;
+    }
+    
+    .input-custom {
+      background-color: #0d0d0d;
+      border: 1px solid #1a1a1a;
+      border-radius: 9999px;
+      padding: 14px 24px;
+      color: #ffffff;
+      outline: none;
+      width: 100%;
+      max-width: 480px;
+    }
+    .input-custom::placeholder {
+      color: #3b3b3b;
+    }
+    
+    .avatar-circle {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background-color: #0088cc;
+      cursor: pointer;
+      transition: transform 0.2s;
+      object-fit: cover;
+    }
+    .avatar-circle:hover {
+      transform: scale(1.1);
+      border: 2px solid #ffffff;
+    }
+    
+    .btn-action {
+      color: #ffffff;
+      cursor: pointer;
+      font-weight: 500;
+      transition: opacity 0.2s;
+      white-space: nowrap;
+    }
+    .btn-action:hover {
+      opacity: 0.7;
+    }
+  </style>
+</head>
+<body class="p-16 select-none">
+
+  <div class="mb-16">
+    <a href="javascript:history.back()" class="text-white text-custom-size flex items-center gap-1 no-underline">
+      <span>&lt;</span> Voltar
+    </a>
+  </div>
+
+  <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-16 items-start pt-10">
+    
+    <div class="flex flex-col gap-6 md:col-span-1 pt-32">
+      <div class="text-custom-size font-bold border-l-[3px] border-white pl-4 text-white cursor-pointer">
+        Informações pessoais
+      </div>
+      <div class="text-custom-size font-bold pl-5 text-[#333333] cursor-not-allowed">
+        Informações de Pagamento
+      </div>
+    </div>
+
+    <div class="md:col-span-3 flex flex-col gap-14">
+      
+      <div class="flex items-center gap-10">
+        <div>
+          <img id="main-avatar-preview" src="https://via.placeholder.com/150" alt="Avatar" class="w-36 h-36 rounded-full object-cover bg-white">
+        </div>
+
+        <div class="flex flex-col gap-4">
+          <div class="flex items-center gap-6">
+            <span class="text-custom-size text-[#7a7a7a]">Avatares de Perfil</span>
+            <div class="grid grid-cols-5 gap-2.5">
+              <img src="avatares/avatar1.png" onerror="this.style.display='none'; this.parentElement.appendChild(document.createElement('div')).className='avatar-circle'" class="avatar-circle" onclick="selecionarAvatarPredefinido('avatares/avatar1.png')">
+              <img src="avatares/avatar2.png" onerror="this.style.display='none'; this.parentElement.appendChild(document.createElement('div')).className='avatar-circle'" class="avatar-circle" onclick="selecionarAvatarPredefinido('avatares/avatar2.png')">
+              <img src="avatares/avatar3.png" onerror="this.style.display='none'; this.parentElement.appendChild(document.createElement('div')).className='avatar-circle'" class="avatar-circle" onclick="selecionarAvatarPredefinido('avatares/avatar3.png')">
+              <img src="avatares/avatar4.png" onerror="this.style.display='none'; this.parentElement.appendChild(document.createElement('div')).className='avatar-circle'" class="avatar-circle" onclick="selecionarAvatarPredefinido('avatares/avatar4.png')">
+              <img src="avatares/avatar5.png" onerror="this.style.display='none'; this.parentElement.appendChild(document.createElement('div')).className='avatar-circle'" class="avatar-circle" onclick="selecionarAvatarPredefinido('avatares/avatar5.png')">
+              <img src="avatares/avatar6.png" onerror="this.style.display='none'; this.parentElement.appendChild(document.createElement('div')).className='avatar-circle'" class="avatar-circle" onclick="selecionarAvatarPredefinido('avatares/avatar6.png')">
+              <img src="avatares/avatar7.png" onerror="this.style.display='none'; this.parentElement.appendChild(document.createElement('div')).className='avatar-circle'" class="avatar-circle" onclick="selecionarAvatarPredefinido('avatares/avatar7.png')">
+              <img src="avatares/avatar8.png" onerror="this.style.display='none'; this.parentElement.appendChild(document.createElement('div')).className='avatar-circle'" class="avatar-circle" onclick="selecionarAvatarPredefinido('avatares/avatar8.png')">
+              <img src="avatares/avatar9.png" onerror="this.style.display='none'; this.parentElement.appendChild(document.createElement('div')).className='avatar-circle'" class="avatar-circle" onclick="selecionarAvatarPredefinido('avatares/avatar9.png')">
+              <img src="avatares/avatar10.png" onerror="this.style.display='none'; this.parentElement.appendChild(document.createElement('div')).className='avatar-circle'" class="avatar-circle" onclick="selecionarAvatarPredefinido('avatares/avatar10.png')">
+            </div>
+          </div>
+          <div>
+            <label for="file-upload" class="text-custom-size btn-action text-[#7a7a7a] underline">Alterar Foto</label>
+            <input type="file" id="file-upload" accept="image/*" class="hidden" onchange="fazerUploadFotoLocal(event)">
+          </div>
+        </div>
+      </div>
+
+      <div id="status-alert" class="hidden text-custom-size my-2"></div>
+
+      <div class="flex flex-col gap-8 max-w-3xl">
+        
+        <div class="flex flex-col gap-2">
+          <label class="text-custom-size text-[#7a7a7a] font-medium">Nome de Usuário</label>
+          <div class="flex items-center gap-8">
+            <input type="text" id="username-field" class="input-custom text-custom-size" placeholder="Nome de Usuário da pessoa">
+            <span class="text-custom-size btn-action" onclick="atualizarNomeUsuario()">Alterar Nome de Usuário</span>
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <label class="text-custom-size text-[#7a7a7a] font-medium">Email</label>
+          <div class="flex items-center gap-8">
+            <input type="email" id="email-field" class="input-custom text-custom-size" placeholder="email da pessoa">
+            <span class="text-custom-size btn-action" onclick="solicitarAlteracaoEmailOtp()">Alterar Email</span>
+          </div>
+          <div id="box-otp-email" class="hidden flex items-center gap-4 mt-2 pl-4">
+            <input type="text" id="otp-email-input" class="input-custom text-custom-size !max-w-[180px]" placeholder="Código de 6 dígitos">
+            <button class="bg-white text-black text-custom-size px-5 py-2.5 rounded-full font-bold" onclick="confirmarCodigoEmailOtp()">Confirmar Código</button>
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <label class="text-custom-size text-[#7a7a7a] font-medium">Senha</label>
+          <div class="flex items-center gap-8">
+            <input type="password" id="password-field" class="input-custom text-custom-size text-gray-500" value="xxxxxxxxxxxx" disabled>
+            <span class="text-custom-size btn-action" onclick="solicitarAlteracaoSenhaOtp()">Alterar senha</span>
+          </div>
+          <div id="box-otp-senha" class="hidden flex flex-col gap-3 mt-2 pl-4">
+            <p class="text-[10px] text-gray-400">Insira o código enviado ao seu e-mail de cadastro e defina a nova senha:</p>
+            <div class="flex flex-col gap-2 md:flex-row md:items-center gap-4">
+              <input type="text" id="otp-password-input" class="input-custom text-custom-size !max-w-[180px]" placeholder="Código de segurança">
+              <input type="password" id="new-password-input" class="input-custom text-custom-size" placeholder="Nova senha (mínimo 6 dígitos)">
+              <button class="bg-white text-black text-custom-size px-5 py-2.5 rounded-full font-bold whitespace-nowrap" onclick="salvarNovaSenhaComOtp()">Verificar e Salvar</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <label class="text-custom-size text-[#7a7a7a] font-medium">Telefone</label>
+          <div class="flex items-center gap-8">
+            <input type="text" id="phone-field" class="input-custom text-custom-size" placeholder="(12)99999-9999">
+            <span class="text-custom-size btn-action" onclick="atualizarTelefoneMetadata()">Alterar Telefone</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://jamidjsminkwcadkrfok.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_x9YHne7dy2BKf2UNq_2pyw__WSWph0W";
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let usuarioLogado = null;
+    let emailPendenteAlteracao = "";
+
+    function emitirMensagem(msg, isErro = false) {
+      const el = document.getElementById('status-alert');
+      el.innerText = msg;
+      el.className = `text-custom-size mt-2 block ${isErro ? 'text-red-500' : 'text-green-400'}`;
+    }
+
+    async function inicializarPerfil() {
+      const { data: { user }, error } = await supabaseClient.auth.getUser();
+      if (error || !user) {
+        alert("Sessão expirada ou inválida.");
+        window.location.href = "login.html";
+        return;
+      }
+      usuarioLogado = user;
+
+      document.getElementById('username-field').value = user.user_metadata.user_name || "";
+      document.getElementById('email-field').value = user.email || "";
+      document.getElementById('phone-field').value = user.user_metadata.phone_number || "";
+      
+      if(user.user_metadata.avatar_url) {
+        document.getElementById('main-avatar-preview').src = user.user_metadata.avatar_url;
+      }
+    }
+
+    // ==========================================
+    // FLUXO DE SEGURANÇA: ALTERAÇÃO DE EMAIL POR OTP
+    // ==========================================
+    async function solicitarAlteracaoEmailOtp() {
+      const novoEmail = document.getElementById('email-field').value.trim();
+      if(!novoEmail || novoEmail === usuarioLogado.email) return emitirMensagem("Insira um endereço de e-mail diferente do atual.", true);
+      
+      emailPendenteAlteracao = novoEmail;
+      emitirMensagem("Enviando código de verificação para " + novoEmail + "...");
+
+      const { error } = await supabaseClient.auth.updateUser({ email: novoEmail });
+      
+      if(error) {
+        emitirMensagem("Erro: " + error.message, true);
+      } else {
+        document.getElementById('box-otp-email').classList.remove('hidden');
+        emitirMensagem("Código de 6 dígitos enviado! Verifique a caixa de entrada do novo e-mail.");
+      }
+    }
+
+    async function confirmarCodigoEmailOtp() {
+      const token = document.getElementById('otp-email-input').value.trim();
+      if(!token) return emitirMensagem("Por favor, digite o código.", true);
+
+      emitirMensagem("Validando token...");
+      const { error } = await supabaseClient.auth.verifyOtp({
+        email: emailPendenteAlteracao,
+        token: token,
+        type: 'email_change'
+      });
+
+      if(error) {
+        emitirMensagem("Código incorreto ou expirou: " + error.message, true);
+      } else {
+        document.getElementById('box-otp-email').classList.add('hidden');
+        emitirMensagem("E-mail alterado com sucesso!");
+        setTimeout(() => window.location.reload(), 1200);
+      }
+    }
+
+    // ==========================================
+    // FLUXO DE SEGURANÇA: ALTERAÇÃO DE SENHA POR OTP (MFA)
+    // ==========================================
+    async function solicitarAlteracaoSenhaOtp() {
+      emitirMensagem("Gerando token de segurança para " + usuarioLogado.email + "...");
+      
+      // Dispara o código OTP para o e-mail atual cadastrado da conta logada
+      const { error } = await supabaseClient.auth.signInWithOtp({
+        email: usuarioLogado.email
+      });
+
+      if(error) {
+        emitirMensagem("Erro ao enviar código: " + error.message, true);
+      } else {
+        document.getElementById('box-otp-senha').classList.remove('hidden');
+        emitirMensagem("Código enviado! Digite o token recebido por e-mail e a sua nova senha.");
+      }
+    }
+
+    async function salvarNovaSenhaComOtp() {
+      const token = document.getElementById('otp-password-input').value.trim();
+      const novaSenha = document.getElementById('new-password-input').value.trim();
+
+      if(!token) return emitirMensagem("Digite o código de segurança.", true);
+      if(novaSenha.length < 6) return emitirMensagem("A nova senha deve ter no mínimo 6 caracteres.", true);
+
+      emitirMensagem("Autenticando token...");
+
+      // Valida se o token numérico digito casa com o e-mail logado
+      const { error: otpError } = await supabaseClient.auth.verifyOtp({
+        email: usuarioLogado.email,
+        token: token,
+        type: 'magiclink'
+      });
+
+      if(otpError) return emitirMensagem("Código de verificação inválido ou expirado.", true);
+
+      // Atualiza a senha na sessão ativa autorizada
+      const { error: passError } = await supabaseClient.auth.updateUser({ password: novaSenha });
+
+      if(passError) {
+        emitirMensagem("Erro ao atualizar senha: " + passError.message, true);
+      } else {
+        document.getElementById('box-otp-senha').classList.add('hidden');
+        document.getElementById('otp-password-input').value = "";
+        document.getElementById('new-password-input').value = "";
+        emitirMensagem("Sua senha foi redefinida com sucesso!");
+      }
+    }
+
+    // ==========================================
+    // FLUXOS RESTANTES DO SEU LAYOUT ORIGINAL
+    // ==========================================
+    async function atualizarTelefoneMetadata() {
+      const novoTel = document.getElementById('phone-field').value.trim();
+      if(!novoTel) return emitirMensagem("Digite um número de telefone.", true);
+
+      emitirMensagem("Salvando telefone...");
+      const { error } = await supabaseClient.auth.updateUser({
+        data: { phone_number: novoTel }
+      });
+
+      if(error) emitirMensagem("Erro ao salvar: " + error.message, true);
+      else emitirMensagem("Telefone salvo com sucesso!");
+    }
+
+    async function atualizarNomeUsuario() {
+      const novoNome = document.getElementById('username-field').value.trim();
+      if(!novoNome) return emitirMensagem("Nome inválido.", true);
+
+      const { error } = await supabaseClient.auth.updateUser({
+        data: { user_name: novoNome }
+      });
+
+      if(error) emitirMensagem("Erro: " + error.message, true);
+      else emitirMensagem("Nome de usuário atualizado!");
+    }
+
+    async function selecionarAvatarPredefinido(urlCaminho) {
+      document.getElementById('main-avatar-preview').src = urlCaminho;
+      await supabaseClient.auth.updateUser({ data: { avatar_url: urlCaminho } });
+      emitirMensagem("Avatar atualizado!");
+    }
+
+    async function fazerUploadFotoLocal(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        document.getElementById('main-avatar-preview').src = reader.result;
+        await supabaseClient.auth.updateUser({ data: { avatar_url: reader.result } });
+        emitirMensagem("Foto alterada!");
+      };
+      reader.readAsDataURL(file);
+    }
+
+    document.addEventListener('DOMContentLoaded', inicializarPerfil);
+  </script>
+</body>
+</html>
