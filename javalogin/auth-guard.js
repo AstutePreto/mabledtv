@@ -117,5 +117,22 @@ async function deslogarGlobal() {
 // Salva a origem atual assim que a página carregar
 salvarPaginaOrigem();
 
+// Bloqueio de ferramentas de desenvolvedor (Ctrl+Shift+I, F12 e Botão Direito)
+window.addEventListener('keydown', function (e) {
+  if (e.key === 'F12') {
+    e.preventDefault();
+  }
+  if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.key === 'C' || e.key === 'c')) {
+    e.preventDefault();
+  }
+  if (e.ctrlKey && (e.key === 'U' || e.key === 'u')) {
+    e.preventDefault();
+  }
+});
+
+window.addEventListener('contextmenu', function (e) {
+  e.preventDefault();
+});
+
 // Dispara a verificação assim que o DOM estiver pronto
 document.addEventListener('DOMContentLoaded', gerenciarSessaoGlobal);
