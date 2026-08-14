@@ -35,11 +35,12 @@ async function carregarDadosEPG() {
 async function atualizarEPGPorNome(nomeCanal, tvgId = "") {
   if (!nomeCanal) return;
 
-  exibirMensagemEPG(nomeCanal, "Carregando programação...", []);
+  // Mostra um estado de carregamento inicial dentro do card
+  exibirMensagemEPG("Carregando programação...", "Buscando guia de programação atualizado...", []);
 
   const xmlDoc = await carregarDadosEPG();
   if (!xmlDoc) {
-    exibirMensagemEPG(nomeCanal, "Transmissão Ao Vivo • Guia indisponível.", []);
+    exibirMensagemEPG("Transmissão Ao Vivo", "Guia de programação indisponível no momento.", []);
     return;
   }
 
@@ -87,7 +88,7 @@ async function atualizarEPGPorNome(nomeCanal, tvgId = "") {
 
   if (!targetChannelId) {
     console.warn(`EPG: Nenhum canal mapeado no XML para '${nomeCanal}' (tvg-id: '${tvgId}')`);
-    exibirMensagemEPG(nomeCanal, "Transmissão Ao Vivo • Programação não disponível.", []);
+    exibirMensagemEPG("Transmissão Ao Vivo", "Programação detalhada não disponível para este canal.", []);
     return;
   }
 
@@ -122,7 +123,7 @@ async function atualizarEPGPorNome(nomeCanal, tvgId = "") {
 
   listaProgramasCanal.sort((a, b) => a.inicio - b.inicio);
 
-  // 5. Exibe os dados
+  // 5. Exibe os dados sincronizados diretamente no Card Expandido
   if (listaProgramasCanal.length > 0) {
     const atual = listaProgramasCanal[0];
     const proximos = listaProgramasCanal.slice(1, 4);
@@ -136,37 +137,122 @@ async function atualizarEPGPorNome(nomeCanal, tvgId = "") {
       proximos
     );
   } else {
-    exibirMensagemEPG(nomeCanal, "Transmissão Ao Vivo • Sem grade para este horário.", []);
+    exibirMensagemEPG("Transmissão Ao Vivo", "Sem grade de horários disponível para o momento.", []);
   }
 }
 
+// 📌 FUNÇÃO CORRIGIDA: Limpa os canais fechados, restaura o nome original e evita texto laranja vazado
 function exibirMensagemEPG(titulo, descricao, proximosProgramas = []) {
-  const elemTitulo = document.getElementById('epg-title');
-  const elemDesc = document.getElementById('epg-desc');
-  const elemUpcoming = document.getElementById('epg-upcoming');
+  
+  // 1. Antes de tudo, limpa QUALQUER card que não deveria estar ativo e restaura o nome original dele
+  document.querySelectorAll(".channel-item").forEach(card => {
+    // Se o card NÃO tem a classe active, mas por algum motivo ainda tem o bloco expandido, removemos e restauramos
+    if (!card.classList.contains("active")) {
+      const infoBlock = card.querySelector('.channel-info-block');
+      if (infoBlock) {
+        const nameElem = infoBlock.querySelector('.channel-item-name');
+        if (nameElem) {
+          // Se o texto ficou como "Carregando...", recupera o nome real armazenado ou limpa modificações estranhas
+          if (nameElem.innerText.includes("Carregando programação...")) {
+            // Tenta pegar o nome correto se você tiver um atributo (ex: data-name), ou deixa o texto limpo
+            if (card.dataset.originalName) {
+              nameElem.innerText = card.dataset.originalName;
+            }
+          }
+          card.appendChild(nameElem); // Devolve o nome para a raiz do card quadrado
+        }
+        infoBlock.remove(); // Deleta o bloco de informações estendido
+      }
+    }
+  });
+
+  // 2. Pega o canal que está ativo de fato agora
+  const cardAtivo = document.querySelector(".channel-item.active");
+  if (!cardAtivo) return;
+
+  // Guarda o nome original do canal em um atributo "data" para podermos restaurar depois sem perder o título real
+  const nameElemOriginal = cardAtivo.querySelector('.channel-item-name');
+  if (nameElemOriginal && !cardAtivo.dataset.originalName) {
+    if (!nameElemOriginal.innerText.includes("Carregando programação...")) {
+      cardAtivo.dataset.originalName = nameElemOriginal.innerText;
+    }
+  }
+
+  let infoBlock = cardAtivo.querySelector('.channel-info-block');
+  if (!infoBlock) {
+    infoBlock = document.createElement('div');
+    infoBlock.className = 'channel-info-block';
+    
+    // Mudamos overflow: hidden para overflow-y: auto e adicionamos uma altura máxima interna
+    infoBlock.style.cssText = "display: flex; flex-direction: column; align-items: flex-start; text-align: left; flex: 1; max-height: 75px; overflow-y: auto; padding-right: 4px;";
+    
+    if (nameElemOriginal) {
+      infoBlock.appendChild(nameElemOriginal);
+    }
+    cardAtivo.appendChild(infoBlock);
+  }
+
+  // Se o texto do título diz "Carregando programação...", atualiza apenas o texto dentro do bloco para o usuário ver o status
+  const currentNameElem = infoBlock.querySelector('.channel-item-name');
+  if (titulo === "Carregando programação..." || titulo === "Transmissão Ao Vivo") {
+    // Se ainda está carregando, coloca o status no lugar da descrição para não estragar o título do canal
+    if (currentNameElem && cardAtivo.dataset.originalName) {
+      currentNameElem.innerText = cardAtivo.dataset.originalName; 
+    }
+  }
+
+  // 4. Procura ou cria a caixinha interna do EPG
+  let epgBox = infoBlock.querySelector('.epg-info-box');
+  if (!epgBox) {
+    epgBox = document.createElement('div');
+    epgBox.className = 'epg-info-box';
+    epgBox.style.cssText = "display: block; width: 100%; margin-top: 2px;";
+    
+    const tElem = document.createElement('div');
+    tElem.className = 'epg-title';
+    tElem.style.cssText = "font-size: 11px; font-weight: 700; color: #ff9800; margin-bottom: 1px;";
+    
+    const dElem = document.createElement('div');
+    dElem.className = 'epg-desc';
+    dElem.style.cssText = "font-size: 11px; color: #9ca3af; line-height: 1.2; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;";
+    
+    epgBox.appendChild(tElem);
+    epgBox.appendChild(dElem);
+    infoBlock.appendChild(epgBox);
+  }
+
+  // 5. Injeta os textos corretos vindos do XML
+  const elemTitulo = epgBox.querySelector('.epg-title');
+  const elemDesc = epgBox.querySelector('.epg-desc');
 
   if (elemTitulo) elemTitulo.innerText = titulo;
   if (elemDesc) elemDesc.innerText = descricao;
 
-  if (elemUpcoming) {
-    if (proximosProgramas.length > 0) {
-      let html = `<div class="epg-upcoming-title">A Seguir:</div>`;
-      
-      proximosProgramas.forEach(prog => {
-        const hInicio = prog.inicio.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        html += `
-          <div class="epg-upcoming-item">
-            <span class="epg-upcoming-time">${hInicio}</span>
-            <span class="epg-upcoming-name">${prog.titulo}</span>
-          </div>
-        `;
-      });
-
-      elemUpcoming.innerHTML = html;
-      elemUpcoming.style.display = "block";
-    } else {
-      elemUpcoming.style.display = "none";
+  // 6. Gerencia os próximos programas ("A Seguir")
+  let blocoUpcoming = infoBlock.querySelector('.epg-upcoming-container');
+  
+  if (proximosProgramas.length > 0) {
+    if (!blocoUpcoming) {
+      blocoUpcoming = document.createElement('div');
+      blocoUpcoming.className = 'epg-upcoming-container';
+      blocoUpcoming.style.cssText = "margin-top: 4px; border-top: 1px solid #2c2c2e; padding-top: 4px; width: 100%;";
+      infoBlock.appendChild(blocoUpcoming);
     }
+
+    let html = `<div style="font-size: 9px; font-weight: bold; color: #eab308; margin-bottom: 1px;">A SEGUIR:</div>`;
+    proximosProgramas.forEach(prog => {
+      const hInicio = prog.inicio.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      html += `
+        <div style="font-size: 10px; color: #a1a1aa; display: flex; gap: 6px;">
+          <span style="color: #fff; font-weight: 500;">${hInicio}</span>
+          <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1;">${prog.titulo}</span>
+        </div>
+      `;
+    });
+    blocoUpcoming.innerHTML = html;
+    blocoUpcoming.style.display = "block";
+  } else if (blocoUpcoming) {
+    blocoUpcoming.style.display = "none";
   }
 }
 
