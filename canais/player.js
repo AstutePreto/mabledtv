@@ -1,4 +1,4 @@
-const m3uUrl = "https://raw.githubusercontent.com/ManoLimah/Manoteste/refs/heads/main/ManoTV.m3u";
+const m3uUrl = "https://raw.githubusercontent.com/AstutePreto/tv6769/refs/heads/main/tv6769.m3u";
 const proxyBases = [
   "https://api.allorigins.win/raw?url=",
   "https://cors-anywhere.herokuapp.com/",
