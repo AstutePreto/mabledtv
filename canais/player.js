@@ -37,18 +37,410 @@ let dashPlayer;
 let activeCategory = "Todos"; 
 
 // --- GERENCIAMENTO DE CONTAS E FAVORITOS ---
-// Define qual conta está ativa por padrão (mude dinamicamente se tiver um seletor de perfil)
 let currentAccount = localStorage.getItem('manoTV_currentAccount') || "Conta_Padrao";
-// Carrega o banco de dados de favoritos de todas as contas
 let allAccountsFavorites = JSON.parse(localStorage.getItem('manoTV_accounts_favorites')) || {};
-// Garante que a conta atual possua um array de favoritos iniciado
 if (!allAccountsFavorites[currentAccount]) {
   allAccountsFavorites[currentAccount] = [];
 }
 
-let currentAttemptIndex = -2; 
+let currentAttemptIndex = -1; 
 let proxyTimeoutTimer = null;
 let currentChannelData = null;
+
+// --- CONFIGURAÇÃO DO PLAYER CUSTOMIZADO ---
+let proporcoesDisponiveis = ["auto", "16:9", "3:4", "21:9"];
+let indiceProporcaoAtual = 0;
+
+construirPlayerCustomizado();
+
+function construirPlayerCustomizado() {
+  const playerContainer = videoPlayer.parentElement;
+  if (!playerContainer) return;
+
+  // Desativa os controles padrão do navegador para usarmos os nossos
+  videoPlayer.controls = false;
+
+  // Injeta a estilização necessária para os controles customizados
+  const estiloPlayer = document.createElement("style");
+  estiloPlayer.textContent = `
+    .player-container-custom {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: #000;
+      overflow: hidden;
+    }
+    .player-container-custom:fullscreen {
+      width: 100vw !important;
+      height: 100vh !important;
+    }
+    /* Barra de controles inferior */
+    .custom-controls-bar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(transparent, rgba(0, 0, 0, 0.9));
+      display: flex;
+      flex-direction: column;
+      padding: 5px 20px 12px 20px;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      z-index: 2147483647;
+    }
+    .player-container-custom:hover .custom-controls-bar {
+      opacity: 1;
+    }
+    .controls-row-buttons {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      margin-top: 6px;
+    }
+    .controls-left, .controls-right {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .control-btn {
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 16px;
+      cursor: pointer;
+      opacity: 0.85;
+      transition: opacity 0.2s, transform 0.1s;
+      padding: 4px;
+      filter: grayscale(1) brightness(1.5);
+    }
+    .control-btn:hover {
+      opacity: 1;
+      transform: scale(1.1);
+    }
+    .control-btn.fav-active {
+      color: #fff !important;
+      filter: grayscale(0) drop-shadow(0 0 2px #eab308) !important;
+      opacity: 1;
+    }
+    /* Menu de opções flutuante */
+    .custom-options-menu {
+      position: absolute;
+      bottom: 75px;
+      right: 20px;
+      background: #1c1c1e;
+      border: 1px solid #2c2c2e;
+      border-radius: 8px;
+      padding: 6px 0;
+      display: none;
+      flex-direction: column;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.6);
+      min-width: 180px;
+      z-index: 2147483647;
+    }
+    .menu-item-custom {
+      background: none;
+      border: none;
+      color: #f2f2f7;
+      padding: 10px 16px;
+      font-size: 13px;
+      text-align: left;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.2s;
+      filter: grayscale(1) brightness(1.3);
+    }
+    .menu-item-custom:hover {
+      background: #2c2c2e;
+    }
+    /* Estilização da Barra de Progresso estilo YouTube */
+    .timeline-container {
+      width: 100%;
+      height: 4px;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      margin-bottom: 4px;
+      position: relative;
+    }
+    .timeline-container:hover {
+      height: 6px;
+    }
+    .timeline-bg {
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.3);
+      position: relative;
+      border-radius: 2px;
+    }
+    .timeline-progress {
+      height: 100%;
+      background: #cc0000; /* Vermelho YouTube */
+      width: 0%;
+      position: absolute;
+      left: 0;
+      top: 0;
+      border-radius: 2px;
+    }
+    .timeline-handle {
+      width: 12px;
+      height: 12px;
+      background: #cc0000;
+      border-radius: 50%;
+      position: absolute;
+      top: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      transition: transform 0.1s;
+      z-index: 2;
+    }
+    .timeline-container:hover .timeline-handle {
+      transform: translate(-50%, -50%) scale(1);
+    }
+    .time-display {
+      color: #ddd;
+      font-size: 12px;
+      font-family: sans-serif;
+      margin-left: 5px;
+      user-select: none;
+    }
+  `;
+  document.head.appendChild(estiloPlayer);
+
+  playerContainer.classList.add("player-container-custom");
+
+  // Estrutura HTML dos novos controles com a Barra de Vídeo (Timeline) incluída
+  const contêinerControles = document.createElement("div");
+  contêinerControles.className = "custom-controls-bar";
+
+  contêinerControles.innerHTML = `
+    <div class="timeline-container" id="custTimelineContainer">
+      <div class="timeline-bg">
+        <div class="timeline-progress" id="custTimelineProgress"></div>
+        <div class="timeline-handle" id="custTimelineHandle"></div>
+      </div>
+    </div>
+    <div class="controls-row-buttons">
+      <div class="controls-left">
+        <button class="control-btn" id="custPlayBtn">▶</button>
+        <button class="control-btn" id="custDisplayFavBtn" title="Adicionar aos favoritos">★</button>
+        <button class="control-btn" id="custMuteBtn">🔊</button>
+        <span class="time-display" id="custTimeDisplay">00:00 / 00:00</span>
+      </div>
+      <div class="controls-right">
+        <button class="control-btn" id="custOptBtn">⚙️</button>
+        <button class="control-btn" id="custFullBtn">⛶</button>
+      </div>
+    </div>
+  `;
+
+  const menuPopup = document.createElement("div");
+  menuPopup.className = "custom-options-menu";
+
+  const btnProporcao = document.createElement("button");
+  btnProporcao.className = "menu-item-custom";
+  btnProporcao.textContent = "📺 Proporção: Padrão";
+
+  const btnPip = document.createElement("button");
+  btnPip.className = "menu-item-custom";
+  btnPip.textContent = "🖼️ Picture-in-Picture";
+
+  menuPopup.appendChild(btnProporcao);
+  menuPopup.appendChild(btnPip);
+  playerContainer.appendChild(contêinerControles);
+  playerContainer.appendChild(menuPopup);
+
+  // --- LÓGICA DO CONTROLE DE TEMPO (TIMELINE / BARRA DE VÍDEO) ---
+  const timelineContainer = contêinerControles.querySelector("#custTimelineContainer");
+  const timelineProgress = contêinerControles.querySelector("#custTimelineProgress");
+  const timelineHandle = contêinerControles.querySelector("#custTimelineHandle");
+  const timeDisplay = contêinerControles.querySelector("#custTimeDisplay");
+
+  function formatarTempo(segundos) {
+    if (isNaN(segundos) || !isFinite(segundos)) return "00:00";
+    const hrs = Math.floor(segundos / 3600);
+    const mins = Math.floor((segundos % 3600) / 60);
+    const secs = Math.floor(segundos % 60);
+    
+    if (hrs > 0) {
+      return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  }
+
+  // Atualiza a barra conforme o vídeo avança
+  videoPlayer.addEventListener("timeupdate", () => {
+    const atual = videoPlayer.currentTime;
+    const total = videoPlayer.duration;
+
+    if (total && isFinite(total) && total > 0) {
+      const porcentagem = (atual / total) * 100;
+      timelineProgress.style.width = `${porcentagem}%`;
+      timelineHandle.style.left = `${porcentagem}%`;
+      timeDisplay.textContent = `${formatarTempo(atual)} / ${formatarTempo(total)}`;
+    } else {
+      // Caso seja transmissão ao vivo pura sem buffer retroativo detectado
+      timelineProgress.style.width = "100%";
+      timelineHandle.style.left = "100%";
+      timeDisplay.textContent = `${formatarTempo(atual)}`;
+    }
+  });
+
+  // Permitir clicar e arrastar na barra para avançar ou voltar (Scrubbing)
+  function navegarParaPosicao(e) {
+    const total = videoPlayer.duration;
+    if (!total || !isFinite(total)) return; // Ignora se for live absoluta sem suporte a retrocesso
+
+    const rect = timelineContainer.getBoundingClientRect();
+    const cliqueX = e.clientX - rect.left;
+    const larguraTotal = rect.width;
+    let novaPorcentagem = cliqueX / larguraTotal;
+
+    if (novaPorcentagem < 0) novaPorcentagem = 0;
+    if (novaPorcentagem > 1) novaPorcentagem = 1;
+
+    videoPlayer.currentTime = novaPorcentagem * total;
+  }
+
+  let arrastandoBarra = false;
+  timelineContainer.addEventListener("mousedown", (e) => {
+    arrastandoBarra = true;
+    navegarParaPosicao(e);
+  });
+
+  window.addEventListener("mousemove", (e) => {
+    if (arrastandoBarra) navegarParaPosicao(e);
+  });
+
+  window.addEventListener("mouseup", () => {
+    arrastandoBarra = false;
+  });
+
+  // --- LÓGICA DOS BOTÕES DOS CONTROLES ---
+
+  const playBtn = contêinerControles.querySelector("#custPlayBtn");
+  playBtn.addEventListener("click", () => {
+    if (videoPlayer.paused) {
+      videoPlayer.play().catch(() => {});
+      playBtn.textContent = "⏸";
+    } else {
+      videoPlayer.pause();
+      playBtn.textContent = "▶";
+    }
+  });
+
+  videoPlayer.addEventListener("play", () => playBtn.textContent = "⏸");
+  videoPlayer.addEventListener("pause", () => playBtn.textContent = "▶");
+
+  const displayFavBtn = contêinerControles.querySelector("#custDisplayFavBtn");
+  displayFavBtn.addEventListener("click", () => {
+    if (currentChannelData && currentChannelData.url) {
+      toggleFavorite(currentChannelData.url);
+      atualizarEstadoBotaoFavoritoDisplay();
+    }
+  });
+
+  const muteBtn = contêinerControles.querySelector("#custMuteBtn");
+  muteBtn.addEventListener("click", () => {
+    videoPlayer.muted = !videoPlayer.muted;
+    muteBtn.textContent = videoPlayer.muted ? "🔇" : "🔊";
+  });
+
+  const optBtn = contêinerControles.querySelector("#custOptBtn");
+  optBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const visivel = menuPopup.style.display === "flex";
+    menuPopup.style.display = visivel ? "none" : "flex";
+  });
+
+  document.addEventListener("click", () => menuPopup.style.display = "none");
+
+  btnProporcao.addEventListener("click", (e) => {
+    e.stopPropagation();
+    indiceProporcaoAtual = (indiceProporcaoAtual + 1) % proporcoesDisponiveis.length;
+    const novaProporcao = proporcoesDisponiveis[indiceProporcaoAtual];
+    alterarProporcaoVideo(novaProporcao);
+
+    const labels = {
+      "auto": "📺 Proporção: Padrão",
+      "16:9": "🎬 Proporção: 16:9",
+      "3:4": "📺 Proporção: 3:4",
+      "21:9": "🎥 Proporção: 21:9"
+    };
+    btnProporcao.textContent = labels[novaProporcao];
+  });
+
+  btnPip.addEventListener("click", async (e) => {
+    e.stopPropagation();
+    menuPopup.style.display = "none";
+    try {
+      if (document.pictureInPictureElement) {
+        await document.exitPictureInPicture();
+      } else if (videoPlayer.readyState >= 1) {
+        await videoPlayer.requestPictureInPicture();
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  });
+
+  const fullBtn = contêinerControles.querySelector("#custFullBtn");
+  fullBtn.addEventListener("click", () => {
+    if (!document.fullscreenElement) {
+      playerContainer.requestFullscreen().catch(err => console.log(err));
+    } else {
+      document.exitFullscreen();
+    }
+  });
+
+  let temporizadorControles;
+  playerContainer.addEventListener("mousemove", () => {
+    contêinerControles.style.opacity = "1";
+    document.body.style.cursor = "default";
+    clearTimeout(temporizadorControles);
+    temporizadorControles = setTimeout(() => {
+      if (!videoPlayer.paused && document.fullscreenElement) {
+        contêinerControles.style.opacity = "0";
+        document.body.style.cursor = "none";
+      }
+    }, 3000);
+  });
+}
+
+function atualizarEstadoBotaoFavoritoDisplay() {
+  const displayFavBtn = document.getElementById("custDisplayFavBtn");
+  if (!displayFavBtn || !currentChannelData) return;
+
+  const currentFavs = allAccountsFavorites[currentAccount] || [];
+  if (currentFavs.includes(currentChannelData.url)) {
+    displayFavBtn.classList.add("fav-active");
+  } else {
+    displayFavBtn.classList.remove("fav-active");
+  }
+}
+
+function alterarProporcaoVideo(proporcao) {
+  videoPlayer.style.setProperty("object-fit", "contain", "important");
+  videoPlayer.style.setProperty("width", "100%", "important");
+  videoPlayer.style.setProperty("height", "100%", "important");
+
+  if (proporcao === "auto") return;
+
+  videoPlayer.style.setProperty("object-fit", "fill", "important");
+
+  if (proporcao === "16:9") {
+    videoPlayer.style.setProperty("width", "100%", "important");
+    videoPlayer.style.setProperty("height", "100%", "important");
+  } else if (proporcao === "3:4") {
+    videoPlayer.style.setProperty("width", "75%", "important"); 
+    videoPlayer.style.setProperty("height", "100%", "important");
+  } else if (proporcao === "21:9") {
+    videoPlayer.style.setProperty("width", "100%", "important");
+    videoPlayer.style.setProperty("height", "75%", "important");
+  }
+}
+
+// ----------------------------------------------------------------------------------
 
 function normalizeGroup(group) {
   if (!group) return "Geral";
@@ -157,12 +549,10 @@ function parseExtinf(line) {
 function generateSidebarCategories() {
   if (!categoriesSidebar) return;
   
-  // Captura os botões fixos iniciais se houverem no HTML (ex: Botão "Todos")
   const btnTodos = document.getElementById('btnTodos');
   categoriesSidebar.innerHTML = "";
   if (btnTodos) categoriesSidebar.appendChild(btnTodos);
 
-  // 1. Inserir botão de "Favoritos" no início da barra
   const favBtn = document.createElement("button");
   favBtn.className = "category-btn " + (activeCategory === "Favoritos" ? "active" : "");
   favBtn.innerHTML = "⭐ Favoritos";
@@ -214,7 +604,6 @@ function filtrarGradeCanais() {
   const term = searchInput ? searchInput.value.toLowerCase() : "";
   let filtered = channels;
 
-  // Filtra por favoritos da conta atual
   if (activeCategory === "Favoritos") {
     const currentFavs = allAccountsFavorites[currentAccount] || [];
     filtered = filtered.filter(c => currentFavs.includes(c.url));
@@ -246,26 +635,24 @@ function displayChannels(channelsToDisplay) {
     const isFav = currentFavs.includes(channel.url);
     const logoUrl = channel.logo ? channel.logo : "https://via.placeholder.com/44x44/8b7d73/ffffff?text=TV";
     
-    // Injeta a estrutura HTML incluindo o botão de estrela (.btn-fav)
     item.innerHTML = `
       <img src="${logoUrl}" crossorigin="anonymous" onerror="this.src='https://via.placeholder.com/44x44/73675e/ffffff?text=TV'">
       <div class="channel-item-name">${channel.name}</div>
       <button class="btn-fav ${isFav ? 'active' : ''}" title="Adicionar aos favoritos">★</button>
     `;
     
-    // Ação ao clicar no canal (reproduzir)
     item.addEventListener("click", (e) => {
-      if (e.target.classList.contains('btn-fav')) return; // Impede abrir o canal se clicar na estrela
+      if (e.target.classList.contains('btn-fav')) return; 
       playChannel(channel.url, channel.name, channel.tvgId);
       document.querySelectorAll(".channel-item").forEach(i => i.classList.remove("active"));
       item.classList.add("active");
     });
 
-    // Ação ao clicar no botão de estrela
     const btnFav = item.querySelector('.btn-fav');
     btnFav.addEventListener('click', (e) => {
       e.stopPropagation();
       toggleFavorite(channel.url);
+      atualizarEstadoBotaoFavoritoDisplay();
     });
 
     channelsList.appendChild(item);
@@ -280,21 +667,15 @@ function toggleFavorite(url) {
   let currentFavs = allAccountsFavorites[currentAccount];
 
   if (currentFavs.includes(url)) {
-    // Se já estiver favoritado, remove
     allAccountsFavorites[currentAccount] = currentFavs.filter(favUrl => favUrl !== url);
   } else {
-    // Se não estiver, adiciona
     allAccountsFavorites[currentAccount].push(url);
   }
 
-  // Grava as alterações de todas as contas no localStorage
   localStorage.setItem('manoTV_accounts_favorites', JSON.stringify(allAccountsFavorites));
-  
-  // Atualiza dinamicamente a lista na tela
   filtrarGradeCanais();
 }
 
-// Opcional: Função utilitária para mudar de conta/perfil no app
 function mudarDeConta(nomeNovaConta) {
   currentAccount = nomeNovaConta;
   localStorage.setItem('manoTV_currentAccount', nomeNovaConta);
@@ -302,9 +683,8 @@ function mudarDeConta(nomeNovaConta) {
     allAccountsFavorites[currentAccount] = [];
   }
   filtrarGradeCanais();
+  atualizarEstadoBotaoFavoritoDisplay();
 }
-
-// --- REPRODUÇÃO MULTI-ESTRATÉGIA OTIMIZADA ---
 
 function playChannel(url, channelName = "", tvgId = "") {
   if (channelName && typeof atualizarEPGPorNome === 'function') {
@@ -312,8 +692,9 @@ function playChannel(url, channelName = "", tvgId = "") {
   }
 
   currentChannelData = { url, channelName, tvgId };
-  currentAttemptIndex = -2;
+  currentAttemptIndex = -1; 
   tentarReproduzir();
+  atualizarEstadoBotaoFavoritoDisplay();
 }
 
 function atualizarStatusLoading(mensagem) {
@@ -324,7 +705,7 @@ function atualizarStatusLoading(mensagem) {
       statusText.className = 'loading-text-status text-xs text-amber-400 mt-2 font-medium text-center';
       loadingIndicator.appendChild(statusText);
     }
-    statusText.textContent = message = mensagem;
+    statusText.textContent = mensagem;
   }
 }
 
@@ -338,15 +719,10 @@ function tentarReproduzir() {
   videoPlayer.style.display = "none";
 
   let targetUrl = url;
-  let statusMessage = "";
 
-  if (currentAttemptIndex === -2) {;
-  } else if (currentAttemptIndex === -1) {;
-  } else {
+  if (currentAttemptIndex >= 0 && currentAttemptIndex < proxyBases.length) {
     targetUrl = proxyBases[currentAttemptIndex] + encodeURIComponent(url);
   }
-
-  atualizarStatusLoading(statusMessage);
 
   proxyTimeoutTimer = setTimeout(() => {
     showError("Tempo esgotado (7s). Alternando método...");
@@ -357,13 +733,13 @@ function tentarReproduzir() {
   const isDASH = urlLower.includes(".mpd") || urlLower.includes("dash");
 
   try {
-    if (currentAttemptIndex === -2 && !isDASH) {
+    if (currentAttemptIndex === -1 && !isDASH) {
       videoPlayer.removeAttribute("crossorigin");
       videoPlayer.src = targetUrl;
       videoPlayer.load();
 
       videoPlayer.onloadeddata = sucessoPlay;
-      videoPlayer.onplaying = Platform = sucessoPlay;
+      videoPlayer.onplaying = sucessoPlay;
       
       videoPlayer.onerror = () => {
         setTimeout(() => {
@@ -442,7 +818,7 @@ function irParaProximoMetodo() {
   } else {
     loadingIndicator.classList.add("hidden");
     videoPlayer.style.display = "block";
-    showError("Não foi possível carregar o canal. Todos os métodos e proxies falharam.");
+    showError("Não foi possível carregar o canal. Todos os proxies falharam.");
   }
 }
 
