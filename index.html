@@ -1,590 +1,1251 @@
 <!DOCTYPE html>
+
 <html lang="pt-BR">
+
 <head>
+
   <meta charset="UTF-8">
-  <!-- Força o celular a renderizar a página como se fosse a tela inteira de um PC (1280px) -->
-  <meta name="viewport" content="width=1280, initial-scale=1.0">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>Mabled</title>
 
+
+
   <link rel="icon" type="image/png" href="avatares/logo site/mtv.png">
-  
+
+ 
+
   <!-- FONTES INTER E MONTSERRAT -->
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
+
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  
+
+ 
+
   <script src="https://cdn.tailwindcss.com"></script>
+
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+
   <script src="https://cdn.jsdelivr.net/npm/dashjs@latest/dist/dash.all.min.js"></script>
-  
+
+ 
+
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=VALOR_DO_SEU_CLIENT_AQUI" crossorigin="anonymous"></script>
 
+
+
   <style>
+
     * {
+
       margin: 0;
+
       padding: 0;
+
       box-sizing: border-box;
+
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+
     }
+
+
 
     body {
-      background-color: #000000; 
+
+      background-color: #000000;
+
       color: #fff;
-      display: flex; 
+
+      display: flex;
+
       flex-direction: column;
+
       height: auto !important;
+
       overflow-y: visible !important;
-      padding: 25px 30px; 
-      /* Mantém o comportamento e tamanho de PC estável permitindo rolagem horizontal limpa */
-      min-width: 1280px !important;
-      overflow-x: auto !important;
+
+      padding: 25px 30px;
+
+      overflow-x: hidden; /* Evita rolagem horizontal indesejada */
+
     }
+
+
 
     /* Fontes utilitárias */
+
     .font-montserrat { font-family: 'Montserrat', sans-serif; }
+
     .font-inter { font-family: 'Inter', sans-serif; }
 
+
+
     /* --- CONTEÚDO CENTRAL --- */
+
     .main-content {
+
       flex: 1;
+
       display: flex;
+
       flex-direction: column;
+
       overflow: hidden;
+
       margin-top: 100px;
+
     }
+
+
 
     /* --- BARRA TOPO ESTÁTICA --- */
+
     .barra-topo-estetica {
+
       position: absolute;
+
       top: 0;
+
       left: 0;
+
       width: 100%;
-      height: 50px; 
+
+      height: 50px;
+
       background-color: #0f0f0f;
-      z-index: 0; 
+
+      z-index: 0;
+
     }
+
+
 
     .search-container {
-      position: absolute; 
-      top: 0; 
+
+      position: absolute;
+
+      top: 0;
+
       left: 50%;
+
       transform: translateX(-50%);
-      width: 100%;
+
+      width: 100vw;
+
       max-width: none !important;
-      height: 50px; 
+
+      height: 50px;
+
       z-index: 10;
+
       display: flex;
+
       align-items: center;
+
       justify-content: space-between;
+
       box-sizing: border-box;
+
       padding-left: 80px !important;  
-      padding-right: 80px; 
+
+      padding-right: 80px;
+
     }
-    
+
+   
+
     .logo-link {
+
       position: relative !important;
+
       height: 25px;
+
       display: inline-flex;
+
       align-items: center;
+
       flex-shrink: 0;
+
     }
+
+
 
     .site-logo {
+
       height: 25px !important;
+
       width: auto !important;
+
       display: block !important;
+
       pointer-events: none;
+
     }
+
+
 
     .search-container a {
+
       position: relative !important;
+
       color: #fff;
+
       text-decoration: none;
+
       font-size: 12px;
+
       font-family: sans-serif;
+
       white-space: nowrap;
+
     }
+
+
 
     .nav-links {
+
       display: flex;
+
       gap: 44px;
+
       align-items: center;
+
       margin: 0 auto !important;
+
     }
+
+
 
     .link-planos, .link-funciona, .link-teste, .link-sobre {
+
       position: relative;
+
       top: auto;
+
       left: auto;
+
     }
+
+
 
     .container-login {
-      position: relative !important; 
+
+      position: relative !important;
+
       width: auto !important;        
+
       height: auto !important;
+
       display: flex;
+
       align-items: center;
+
       z-index: 999 !important;
+
       flex-shrink: 0;
+
     }
+
+
 
     .link-login {
+
       position: relative !important;
-      left: auto !important; 
+
+      left: auto !important;
+
       top: auto !important;
+
       display: inline-flex !important;
-      justify-content: center; 
-      align-items: center;     
-      width: 85px !important;   
+
+      justify-content: center;
+
+      align-items: center;    
+
+      width: 85px !important;  
+
       height: 25px !important;  
-      background-color: #e2b041 !important; 
+
+      background-color: #e2b041 !important;
+
       color: #000000 !important;            
+
       border-radius: 6px !important;        
-      font-weight: bold !important;         
+
+      font-weight: bold !important;        
+
       margin-left: 0 !important;    
+
     }
+
+
 
     html, body, #app, .main-container {
+
       margin-top: 0 !important;
+
       padding-top: 0 !important;
+
     }
+
+
 
     /* --- ESTRUTURA DO BANNER 3D (PRISMA/TRIÂNGULO) --- */
+
     .caixa-grande-banner {
+
       position: absolute;
+
       left: 50% !important;
+
       transform: translateX(-50%) !important;
-      width: 100% !important;
-      top: 50px; 
-      height: 650px; 
+
+      width: 100vw !important;
+
+      top: 50px;
+
+      height: 650px;
+
       background-color: #11121a;
+
       overflow: hidden;
+
       box-sizing: border-box;
+
       z-index: 1;
-      perspective: 2000px; 
+
+      perspective: 2000px;
+
     }
+
+
 
     .prisma-3d {
+
       width: 100%;
+
       height: 100%;
+
       position: relative;
+
       transform-style: preserve-3d;
-      transition: transform 1.2s cubic-bezier(0.25, 1, 0.5, 1); 
+
+      transition: transform 1.2s cubic-bezier(0.25, 1, 0.5, 1);
+
     }
+
+
 
     .face-banner {
+
       position: absolute;
+
       width: 100%;
+
       height: 100%;
+
       left: 0;
+
       top: 0;
-      backface-visibility: hidden; 
+
+      backface-visibility: hidden;
+
     }
+
+
 
     .face-banner img {
+
       width: 100%;
+
       height: 100%;
+
       object-fit: cover;
+
       object-position: center;
+
       display: block;
+
     }
+
+
 
     .btn-carrossel {
+
       position: absolute;
-      top: 50%; 
-      transform: translateY(-50%); 
+
+      top: 50%;
+
+      transform: translateY(-50%);
+
       width: 32px;
+
       height: 32px;
-      border-radius: 50%; 
-      background-color: rgba(0, 0, 0, 0.5); 
+
+      border-radius: 50%;
+
+      background-color: rgba(0, 0, 0, 0.5);
+
       color: #fff;
+
       border: 1px solid rgba(255, 255, 255, 0.4);
+
       font-size: 16px;
+
       font-weight: bold;
+
       cursor: pointer;
+
       display: flex;
+
       align-items: center;
+
       justify-content: center;
-      z-index: 10; 
+
+      z-index: 10;
+
       transition: background-color 0.2s, transform 0.2s;
+
     }
+
+
 
     .btn-carrossel:hover {
+
       background-color: rgba(0, 0, 0, 0.8);
-      transform: translateY(-50%) scale(1.1); 
+
+      transform: translateY(-50%) scale(1.1);
+
     }
+
+
 
     .btn-esquerdo { left: 20px; }
+
     .btn-direito { right: 20px; }
 
+
+
     /* --- INDICADORES (BOLINHAS / DOTS) --- */
+
     .carrossel-dots {
+
       position: absolute;
+
       bottom: 15px;
+
       left: 50%;
+
       transform: translateX(-50%);
+
       display: flex;
+
       gap: 8px;
+
       z-index: 10;
+
     }
+
+
 
     .dot {
+
       width: 8px;
+
       height: 8px;
+
       border-radius: 50%;
+
       background-color: rgba(255, 255, 255, 0.4);
+
       cursor: pointer;
+
       transition: background-color 0.3s, transform 0.3s;
+
     }
+
+
 
     .dot:hover {
+
       background-color: rgba(255, 255, 255, 0.8);
+
     }
 
+
+
     .dot.ativo {
+
       background-color: #e2b041;
+
       transform: scale(1.25);
+
     }
+
   </style>
+
 </head>
+
 <body>
+
+
 
   <div class="barra-topo-estetica"></div>
 
+
+
   <div class="search-container">
+
     <a href="index.html" class="logo-link">
+
       <img src="avatares/logo site/logo.png" class="site-logo" alt="Mabled TV">
+
     </a>
 
+
+
     <div class="nav-links">
+
         <a href="planos.html" class="link-planos">Planos</a>
+
         <a href="comofunciona.html" class="link-funciona">Como funciona</a>
+
         <a href="sobrenos.html" class="link-sobre">Sobre nós</a>
+
         <a href="teste.html" class="link-teste">Assitir</a>
+
     </div>
+
+
 
     <div class="container-login">
+
         <a href="login.html" class="link-login">Login</a>
+
     </div>
+
   </div>
+
+
 
   <!-- CONTAINER DO BANNER 3D -->
+
   <div class="caixa-grande-banner">
+
       <button class="btn-carrossel btn-esquerdo" onclick="fotoAnterior()">&#10094;</button>
+
       <button class="btn-carrossel btn-direito" onclick="proximaFoto()">&#10095;</button>
-      
-      <!-- O PRISMA GEOMÉTRICO -->
+
+     
+
+      <!-- O PRISMA GEOMÉTRICO (Será montado dinamicamente pelo JS) -->
+
       <div class="prisma-3d" id="prisma3D"></div>
 
+
+
       <!-- Bolinhas de Navegação (Dots) -->
+
       <div class="carrossel-dots" id="carrosselDots"></div>
+
   </div>
 
+
+
   <!-- ================================================================= -->
-  <!-- SEÇÕES ABAIXO DO BANNER (TRAVADAS EM LARGURA DESKTOP) -->
+
+  <!-- SEÇÕES ABAIXO DO BANNER -->
+
   <!-- ================================================================= -->
-  <div style="margin-top: 650px; width: 100%; position: relative; left: 50%; transform: translateX(-50%);">
-    
-      <!-- SEÇÃO 1: SOBRE NÓS + 4 CARDS -->
-      <section class="bg-white text-[#1a1a1a] py-32 min-h-[90vh] flex flex-col justify-center px-6 w-full font-inter">
+
+  <div style="margin-top: 650px; width: 100vw; position: relative; left: 50%; transform: translateX(-50%);">
+
+   
+
+  <!-- SEÇÃO 1: SOBRE NÓS + 4 CARDS (COM ALTURA EXPANDIDA E BASTANTE ESPAÇO EM BRANCO) -->
+
+      <section class="bg-white text-[#1a1a1a] py-32 md:py-48 min-h-[90vh] flex flex-col justify-center px-6 w-full font-inter">
+
         <div class="max-w-[1280px] mx-auto w-full">
-          
+
+         
+
           <!-- TEXTO SOBRE NÓS -->
-          <div class="grid grid-cols-12 gap-12 items-center mb-28">
-            
+
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center mb-28">
+
+           
+
             <!-- TÍTULO GRANDE -->
-            <div class="col-span-5 text-left">
-              <span class="font-montserrat text-2xl font-bold tracking-wider text-[#4a4a4a] block mb-2">
+
+            <div class="lg:col-span-5 text-center lg:text-left">
+
+              <span class="font-montserrat text-xl md:text-2xl font-bold tracking-wider text-[#4a4a4a] block mb-2">
+
                 UM POUCO
+
               </span>
-              <div class="flex items-baseline justify-start gap-2">
-                <h2 class="font-montserrat text-[85px] font-bold text-[#1c1c1c] tracking-tight leading-none">
+
+              <div class="flex items-baseline justify-center lg:justify-start gap-2">
+
+                <h2 class="font-montserrat text-6xl md:text-7xl lg:text-[85px] font-bold text-[#1c1c1c] tracking-tight leading-none">
+
                   SOBRE
+
                 </h2>
-                <span class="font-montserrat text-4xl text-[#555] font-normal">
+
+                <span class="font-montserrat text-3xl md:text-4xl text-[#555] font-normal">
+
                   NÓS.
+
                 </span>
+
               </div>
+
             </div>
+
+
 
             <!-- PARÁGRAFO EXPANDIDO -->
-            <div class="col-span-7">
-              <p class="text-xl text-[#333] leading-relaxed font-normal max-w-[655px]">
+
+            <div class="lg:col-span-7">
+
+              <p class="text-base md:text-xl text-[#333] leading-relaxed font-normal max-w-[655px]">
+
                 Nascemos com a missão de transformar a forma como você assiste à TV. Esqueça faturas abusivas, cabos espalhados pela casa ou travamentos no meio do seu evento ao vivo favorito. Combinamos servidores de alta performance com um catálogo sempre atualizado para entregar uma experiência de entretenimento completa, estável e acessível para toda a sua família.
+
               </p>
-            </div>
-          </div>
 
-          <!-- 4 CARDS INFORMATIVOS (LADO A LADO SEM QUEBRAR) -->
-          <div class="grid grid-cols-4 gap-6 max-w-[1150px] mx-auto">
-            
-            <!-- CARD 1 -->
-            <div class="bg-[#1f232b] text-white p-8 rounded-2xl text-center flex flex-col items-center justify-center min-h-[180px] shadow-[0_10px_30px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_15px_35px_rgba(0,0,0,0.15)]">
-              <svg class="w-6 h-6 mb-3 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M13 2L3 14h7v8l10-12h-7z"/></svg>
-              <h3 class="font-montserrat font-bold text-xs uppercase tracking-wider mb-2">SEM TRAVAMENTOS</h3>
-              <p class="text-[11px] text-gray-300 leading-snug">Servidores otimizados de alta velocidade para assistir em Ultra HD.</p>
-            </div>
-
-            <!-- CARD 2 -->
-            <div class="bg-[#1f232b] text-white p-8 rounded-2xl text-center flex flex-col items-center justify-center min-h-[180px] shadow-[0_10px_30px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_15px_35px_rgba(0,0,0,0.15)]">
-              <svg class="w-6 h-6 mb-3 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z"/><path d="M10 8l5 3.5-5 3.5z"/></svg>
-              <h3 class="font-montserrat font-bold text-xs uppercase tracking-wider mb-2">CATÁLOGO COMPLETO</h3>
-              <p class="text-[11px] text-gray-300 leading-snug">Milhares de filmes, séries e canais abertos/fechados liberados.</p>
-            </div>
-
-            <!-- CARD 3 -->
-            <div class="bg-[#1f232b] text-white p-8 rounded-2xl text-center flex flex-col items-center justify-center min-h-[180px] shadow-[0_10px_30px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_15px_35px_rgba(0,0,0,0.15)]">
-              <svg class="w-6 h-6 mb-3 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z"/></svg>
-              <h3 class="font-montserrat font-bold text-xs uppercase tracking-wider mb-2">ONDE ASSISTIR</h3>
-              <p class="text-[11px] text-gray-300 leading-snug">Compatível com Smart TVs, TV Box, Celulares (Android/iOS) e PC.</p>
-            </div>
-
-            <!-- CARD 4 -->
-            <div class="bg-[#1f232b] text-white p-8 rounded-2xl text-center flex flex-col items-center justify-center min-h-[180px] shadow-[0_10px_30px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_15px_35px_rgba(0,0,0,0.15)]">
-              <svg class="w-6 h-6 mb-3 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/></svg>
-              <h3 class="font-montserrat font-bold text-xs uppercase tracking-wider mb-2">SUPORTE RÁPIDO</h3>
-              <p class="text-[11px] text-gray-300 leading-snug">Atendimento via WhatsApp pronto para te auxiliar no que precisar.</p>
             </div>
 
           </div>
+
+
+
+          <!-- 4 CARDS INFORMATIVOS -->
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-[1150px] mx-auto">
+
+           
+
+    <!-- CARD 1 -->
+
+        <div class="bg-[#1f232b] text-white p-8 rounded-2xl text-center flex flex-col items-center justify-center min-h-[180px] shadow-[0_10px_30px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_15px_35px_rgba(0,0,0,0.15)]">
+
+          <svg class="w-6 h-6 mb-3 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M13 2L3 14h7v8l10-12h-7z"/></svg>
+
+          <h3 class="font-montserrat font-bold text-xs uppercase tracking-wider mb-2">SEM TRAVAMENTOS</h3>
+
+          <p class="text-[11px] text-gray-300 leading-snug">Servidores otimizados de alta velocidade para assistir em Ultra HD.</p>
+
         </div>
+
+
+
+        <!-- CARD 2 -->
+
+        <div class="bg-[#1f232b] text-white p-8 rounded-2xl text-center flex flex-col items-center justify-center min-h-[180px] shadow-[0_10px_30px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_15px_35px_rgba(0,0,0,0.15)]">
+
+          <svg class="w-6 h-6 mb-3 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z"/><path d="M10 8l5 3.5-5 3.5z"/></svg>
+
+          <h3 class="font-montserrat font-bold text-xs uppercase tracking-wider mb-2">CATÁLOGO COMPLETO</h3>
+
+          <p class="text-[11px] text-gray-300 leading-snug">Milhares de filmes, séries e canais abertos/fechados liberados.</p>
+
+        </div>
+
+
+
+        <!-- CARD 3 -->
+
+        <div class="bg-[#1f232b] text-white p-8 rounded-2xl text-center flex flex-col items-center justify-center min-h-[180px] shadow-[0_10px_30px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_15px_35px_rgba(0,0,0,0.15)]">
+
+          <svg class="w-6 h-6 mb-3 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z"/></svg>
+
+          <h3 class="font-montserrat font-bold text-xs uppercase tracking-wider mb-2">ONDE ASSISTIR</h3>
+
+          <p class="text-[11px] text-gray-300 leading-snug">Compatível com Smart TVs, TV Box, Celulares (Android/iOS) e PC.</p>
+
+        </div>
+
+
+
+        <!-- CARD 4 -->
+
+        <div class="bg-[#1f232b] text-white p-8 rounded-2xl text-center flex flex-col items-center justify-center min-h-[180px] shadow-[0_10px_30px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_15px_35px_rgba(0,0,0,0.15)]">
+
+          <svg class="w-6 h-6 mb-3 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/></svg>
+
+          <h3 class="font-montserrat font-bold text-xs uppercase tracking-wider mb-2">SUPORTE RÁPIDO</h3>
+
+          <p class="text-[11px] text-gray-300 leading-snug">Atendimento via WhatsApp pronto para te auxiliar no que precisar.</p>
+
+        </div>
+
+
+
+    </div>
+
+        </div>
+
       </section>
 
-      <!-- SEÇÃO 2: CONHEÇA NOSSOS PLANOS -->
-      <section id="planos" class="bg-[#3b3534] text-white py-28 px-6 w-full font-inter">
-        <div class="max-w-[1100px] mx-auto">
-          
-          <div class="text-center mb-10">
-            <h2 class="font-montserrat text-3xl font-bold tracking-wider mb-1 uppercase">CONHEÇA NOSSOS PLANOS</h2>
-            <p class="text-xs text-gray-300">Escolha a melhor opção. Liberação imediata após a assinatura.</p>
-          </div>
 
-          <div class="grid grid-cols-2 gap-8 max-w-[850px] mx-auto items-stretch">
-            
-            <!-- PLANO MENSAL -->
-            <div class="bg-[#21242b] border border-white/5 rounded-2xl p-8 flex flex-col justify-between h-full">
-              <div>
-                <h3 class="font-montserrat text-lg font-bold mb-0.5">Plano Mensal</h3>
-                <p class="text-[11px] text-gray-400 mb-6">Ideal para testar por 30 dias</p>
-                
-                <div class="font-montserrat text-3xl font-extrabold mb-6 flex items-baseline gap-1">
-                  R$9,99 <span class="text-xs font-normal text-gray-400">/mês</span>
-                </div>
 
-                <ul class="text-[11px] text-gray-300 space-y-2.5 mb-8 font-inter">
-                  <li>✓+10.000 Canais, Filmes e Séries</li>
-                  <li>✓5 Telas Simultâneas</li>
-                  <li>✓Guia de Programação (EPG)</li>
-                  <li>✓Tela Conectada</li>
-                  <li>✓5 Contas na Função Família</li>
-                </ul>
+    <!-- SEÇÃO 2: CONHEÇA NOSSOS PLANOS -->
+
+    <section id="planos" class="bg-[#3b3534] text-white py-16 md:py-28 px-6 w-full font-inter">
+
+      <div class="max-w-[1100px] mx-auto">
+
+       
+
+        <div class="text-center mb-10">
+
+          <h2 class="font-montserrat text-2xl md:text-3xl font-bold tracking-wider mb-1 uppercase">CONHEÇA NOSSOS PLANOS</h2>
+
+          <p class="text-xs text-gray-300">Escolha a melhor opção. Liberação imediata após a assinatura.</p>
+
+        </div>
+
+
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-[850px] mx-auto items-stretch">
+
+         
+
+          <div class="bg-[#21242b] border border-white/5 rounded-2xl p-8 flex flex-col justify-between h-full">
+
+            <div>
+
+              <h3 class="font-montserrat text-lg font-bold mb-0.5">Plano Mensal</h3>
+
+              <p class="text-[11px] text-gray-400 mb-6">Ideal para testar por 30 dias</p>
+
+             
+
+              <div class="font-montserrat text-3xl font-extrabold mb-6 flex items-baseline gap-1">
+
+                R$9,99 <span class="text-xs font-normal text-gray-400">/mês</span>
+
               </div>
-              <a href="#" class="w-full py-3 bg-[#3a3b40] hover:bg-[#e6b130] text-white font-montserrat font-bold text-xs rounded-xl text-center transition-all block">
-                Assinar Mensal
-              </a>
+
+
+
+              <ul class="text-[11px] text-gray-300 space-y-2.5 mb-8 font-inter">
+
+                <li>✓+10.000 Canais, Filmes e Séries</li>
+
+                <li>✓5 Telas Simultâneas</li>
+
+                <li>✓Guia de Programação (EPG)</li>
+
+                <li>✓Tela Conectada</li>
+
+                <li>✓5 Contas na Função Família</li>
+
+              </ul>
+
             </div>
 
-            <!-- PLANO ANUAL -->
-            <div class="bg-[#21242b] border-2 border-[#e6b130] rounded-2xl p-8 flex flex-col justify-between h-full relative">
-              <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#e6b130] text-black font-montserrat font-extrabold text-[9px] uppercase px-3 py-1 rounded-sm tracking-wider">
-                RECOMENDADO
-              </div>
-              <div>
-                <h3 class="font-montserrat text-lg font-bold mb-0.5">Plano Anual</h3>
-                <p class="text-[11px] text-gray-400 mb-6">Economia de 20% o ano inteiro</p>
-                
-                <div class="font-montserrat text-3xl font-extrabold mb-6 flex items-baseline gap-1">
-                  R$99,99 <span class="text-xs font-normal text-gray-400">/mês</span>
-                </div>
+            <a href="#" class="w-full py-3 bg-[#3a3b40] hover:bg-[#e6b130] text-white font-montserrat font-bold text-xs rounded-xl text-center transition-all block">
 
-                <ul class="text-[11px] text-gray-300 space-y-2.5 mb-8 font-inter">
-                  <li>✓Tudo do plano Mensal</li>
-                  <li>✓10 Telas Simultâneas</li>
-                  <li>✓Suporte Prioritário VIP</li>
-                  <li>✓Economia superior a 20%</li>
-                  <li>✓10 Contas na Função Família.</li>
-                </ul>
-              </div>
-              <a href="#" class="w-full py-3 bg-[#3a3b40] hover:bg-[#e6b130] text-white font-montserrat font-bold text-xs rounded-xl text-center transition-all block">
-                Assinar Anual
-              </a>
+              Assinar Mensal
+
+            </a>
+
+          </div>
+
+
+
+          <div class="bg-[#21242b] border-2 border-[#e6b130] rounded-2xl p-8 flex flex-col justify-between h-full relative">
+
+            <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#e6b130] text-black font-montserrat font-extrabold text-[9px] uppercase px-3 py-1 rounded-sm tracking-wider">
+
+              RECOMENDADO
+
             </div>
 
-          </div>
-        </div>
-      </section>
+            <div>
 
-      <!-- SEÇÃO FAQ / PERGUNTAS FREQUENTES -->
-      <section class="bg-[#e2b041] py-28 px-6 w-full font-inter">
-        <div class="max-w-[900px] mx-auto bg-[#1f2128] text-white rounded-3xl p-14 shadow-2xl">
-          
-          <div class="text-center mb-10">
-            <h2 class="font-montserrat text-3xl font-extrabold tracking-wide mb-1">
-              Perguntas <span class="text-[#e2b041]">Frequentes</span>
-            </h2>
-            <p class="text-xs text-gray-400 font-medium">Tire suas dúvidas antes de assinar.</p>
-          </div>
+              <h3 class="font-montserrat text-lg font-bold mb-0.5">Plano Anual</h3>
 
-          <div class="space-y-4 max-w-[750px] mx-auto">
-            
-            <details class="group bg-[#3a3b40]/60 hover:bg-[#3a3b40] rounded-xl overflow-hidden transition-all duration-300">
-              <summary class="flex justify-between items-center p-5 cursor-pointer font-montserrat font-bold text-sm text-gray-100 select-none list-none">
-                <span>Preciso de antena ou cabos para usar o serviço?</span>
-                <span class="text-[#e2b041] transition-transform duration-300 group-open:rotate-180 text-xs">▼</span>
-              </summary>
-              <div class="px-5 pb-5 pt-1 text-xs text-gray-300 border-t border-white/5 leading-relaxed font-inter">
-                Não! Você só precisa de uma conexão com a internet. O serviço funciona via aplicativo em Smart TVs, celulares, TV Box, computadores ou tablets.
+              <p class="text-[11px] text-gray-400 mb-6">Economia de 20% o ano inteiro</p>
+
+             
+
+              <div class="font-montserrat text-3xl font-extrabold mb-6 flex items-baseline gap-1">
+
+                R$99,99 <span class="text-xs font-normal text-gray-400">/mês</span>
+
               </div>
-            </details>
 
-            <details class="group bg-[#3a3b40]/60 hover:bg-[#3a3b40] rounded-xl overflow-hidden transition-all duration-300">
-              <summary class="flex justify-between items-center p-5 cursor-pointer font-montserrat font-bold text-sm text-gray-100 select-none list-none">
-                <span>Qual a velocidade de internet recomendada?</span>
-                <span class="text-[#e2b041] transition-transform duration-300 group-open:rotate-180 text-xs">▼</span>
-              </summary>
-              <div class="px-5 pb-5 pt-1 text-xs text-gray-300 border-t border-white/5 leading-relaxed font-inter">
-                Recomendamos no mínimo 10 Mega para conteúdos em HD e a partir de 30 Mega para uma experiência fluida em FHD e 4K.
-              </div>
-            </details>
 
-            <details class="group bg-[#3a3b40]/60 hover:bg-[#3a3b40] rounded-xl overflow-hidden transition-all duration-300">
-              <summary class="flex justify-between items-center p-5 cursor-pointer font-montserrat font-bold text-sm text-gray-100 select-none list-none">
-                <span>Existe fidelidade ou taxa de cancelamento?</span>
-                <span class="text-[#e2b041] transition-transform duration-300 group-open:rotate-180 text-xs">▼</span>
-              </summary>
-              <div class="px-5 pb-5 pt-1 text-xs text-gray-300 border-t border-white/5 leading-relaxed font-inter">
-                Zero fidelidade e sem taxas extras! Você pode cancelar ou renovar seu plano a qualquer momento sem nenhuma complicação.
-              </div>
-            </details>
 
-            <details class="group bg-[#3a3b40]/60 hover:bg-[#3a3b40] rounded-xl overflow-hidden transition-all duration-300">
-              <summary class="flex justify-between items-center p-5 cursor-pointer font-montserrat font-bold text-sm text-gray-100 select-none list-none">
-                <span>Quanto tempo demora para liberar meu acesso?</span>
-                <span class="text-[#e2b041] transition-transform duration-300 group-open:rotate-180 text-xs">▼</span>
-              </summary>
-              <div class="px-5 pb-5 pt-1 text-xs text-gray-300 border-t border-white/5 leading-relaxed font-inter">
-                A liberação é imediata após a confirmação do pagamento. Você receberá os dados de acesso diretamente no seu e-mail ou WhatsApp.
-              </div>
-            </details>
+              <ul class="text-[11px] text-gray-300 space-y-2.5 mb-8 font-inter">
+
+                <li>✓Tudo do plano Mensal</li>
+
+                <li>✓10 Telas Simultâneas</li>
+
+                <li>✓Suporte Prioritário VIP</li>
+
+                <li>✓Economia superior a 20%</li>
+
+                <li>✓10 Contas na Função Família.</li>
+
+              </ul>
+
+            </div>
+
+            <a href="#" class="w-full py-3 bg-[#3a3b40] hover:bg-[#e6b130] text-white font-montserrat font-bold text-xs rounded-xl text-center transition-all block">
+
+              Assinar Anual
+
+            </a>
 
           </div>
-        </div>
-      </section> 
 
-      <!-- SEÇÃO 3: REDES SOCIAIS -->
-      <div class="bg-[#21242b] py-3 border-b border-white/5 w-full">
-        <div class="flex justify-center items-center gap-6 text-gray-300">
-          <a href="https://www.instagram.com/mabledtv" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors" title="Instagram">
-            <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
-          </a>
-          <a href="https://www.facebook.com/profile.php?id=61591501409509" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors" title="Facebook">
-            <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-          </a>
-          <a href="https://www.tiktok.com/@SEU_USUARIO" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors" title="TikTok">
-            <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64c.29 0 .56.04.83.12V9.3a6.33 6.33 0 0 0-1-.08A6.26 6.26 0 0 0 3 15.5 6.26 6.26 0 0 0 9.26 21.8a6.26 6.26 0 0 0 6.26-6.26V9.08a8.16 8.16 0 0 0 4.07 1.25V6.88a4.84 4.84 0 0 1-.001-.19z"/></svg>
-          </a>
-          <a href="https://www.youtube.com/@SEU_CANAL" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors" title="YouTube">
-            <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M23.498 6.163a3.003 3.003 0 0 0-2.11-2.11C19.517 3.545 12 3.545 12 3.545s-7.516 0-9.387.508a3.003 3.003 0 0 0-2.11 2.11C0 8.033 0 12 0 12s0 3.967.503 5.837a3.003 3.003 0 0 0 2.11 2.11c1.871.508 9.387.508 9.387.508s7.517 0 9.387-.508a3.003 3.003 0 0 0 2.11-2.11C24 15.967 24 12 24 12s0-3.967-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
-          </a>
-          <a href="mailto:mabledtvorganization@gmail.com" class="hover:text-white transition-colors" title="Enviar E-mail">
-            <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
-          </a>
+
+
         </div>
+
       </div>
 
-      <style>
-        body, html {
-          margin-bottom: 0 !important;
-          padding-bottom: 0 !important;
-          height: auto !important;
-        }
-        footer {
-          margin-bottom: 0 !important;
-          padding-bottom: 0 !important;
-        }
-      </style>
+    </section>
 
-      <!-- SEÇÃO 4: RODAPÉ COMPLETO -->
-      <footer class="bg-[#0e1015] text-white pt-12 pb-6 px-6 w-full font-inter">
-        <div class="max-w-[1100px] mx-auto grid grid-cols-4 gap-8 mb-12 text-xs">
-          
-          <div>
-            <h4 class="font-montserrat font-bold text-xs uppercase mb-4 tracking-wider">ATENDIMENTO AO CLIENTE</h4>
-            <ul class="space-y-2 text-gray-400">
-              <li><a href="#planos" class="hover:text-white">Planos</a></li>
-              <li><a href="#" class="hover:text-white">Como Funciona</a></li>
-              <li><a href="#" class="hover:text-white">Preferências de Cookies</a></li>
-              <li><a href="#" class="hover:text-white">Devolução e Reembolso</a></li>
-            </ul>
-          </div>
 
-          <div>
-            <h4 class="font-montserrat font-bold text-xs uppercase mb-4 tracking-wider">SOBRE NÓS</h4>
-            <ul class="space-y-2 text-gray-400">
-              <li><a href="sobrenos.html" class="hover:text-white">Sobre Nós</a></li>
-              <li><a href="#" class="hover:text-white">Política de Privacidade</a></li>
-              <li><a href="#" class="hover:text-white">Políticas</a></li>
-            </ul>
-          </div>
 
-          <div>
-            <h4 class="font-montserrat font-bold text-xs uppercase mb-4 tracking-wider">PAGAMENTO</h4>
-            <div class="grid grid-cols-3 gap-2 max-w-[180px]">
-              <div class="bg-[#0000d6] rounded overflow-hidden flex items-center justify-center h-[30px]">
-                <img src="avatares/pagamento/visa.png" alt="Visa" style="width: 96%; height: 100%; object-fit: fill;">
-              </div>
-              <div class="bg-[#eb001b] rounded overflow-hidden flex items-center justify-center h-[30px]">
-                <img src="avatares/pagamento/mastercard.png" alt="Mastercard" style="width: 96%; height: 100%; object-fit: fill;">
-              </div>
-              <div class="bg-[#282e38] rounded overflow-hidden flex items-center justify-center h-[30px] border border-white/10">
-                <img src="avatares/pagamento/elo.png" alt="Elo" style="width: 96%; height: 100%; object-fit: fill;">
-              </div>
-              <div class="bg-[#006fcf] rounded overflow-hidden flex items-center justify-center h-[30px]">
-                <img src="avatares/pagamento/amex.png" alt="Amex" style="width: 96%; height: 100%; object-fit: fill;">
-              </div>
-              <div class="bg-[#002d62] rounded overflow-hidden flex items-center justify-center h-[30px]">
-                <img src="avatares/pagamento/itau.png" alt="Itaú" style="width: 96%; height: 100%; object-fit: fill;">
-              </div>
-              <div class="bg-[#3b3b3b] rounded overflow-hidden flex items-center justify-center h-[30px]">
-                <img src="avatares/pagamento/boleto.png" alt="Boleto" style="width: 96%; height: 100%; object-fit: fill;">
-              </div>
-              <div class="bg-[#32bcad] rounded overflow-hidden flex items-center justify-center h-[30px]">
-                <img src="avatares/pagamento/pix.png" alt="Pix" style="width: 96%; height: 100%; object-fit: fill;">
-              </div>
+    <!-- SEÇÃO FAQ / PERGUNTAS FREQUENTES -->
+
+    <section class="bg-[#e2b041] py-20 md:py-28 px-6 w-full font-inter">
+
+      <div class="max-w-[900px] mx-auto bg-[#1f2128] text-white rounded-3xl p-8 md:p-14 shadow-2xl">
+
+       
+
+        <!-- TÍTULO DA SEÇÃO -->
+
+        <div class="text-center mb-10">
+
+          <h2 class="font-montserrat text-2xl md:text-3xl font-extrabold tracking-wide mb-1">
+
+            Perguntas <span class="text-[#e2b041]">Frequentes</span>
+
+          </h2>
+
+          <p class="text-xs text-gray-400 font-medium">Tire suas dúvidas antes de assinar.</p>
+
+        </div>
+
+
+
+        <!-- LISTA DE PERGUNTAS (ACCORDION) -->
+
+        <div class="space-y-4 max-w-[750px] mx-auto">
+
+         
+
+          <!-- ITEM 1 -->
+
+          <details class="group bg-[#3a3b40]/60 hover:bg-[#3a3b40] rounded-xl overflow-hidden transition-all duration-300">
+
+            <summary class="flex justify-between items-center p-4 md:p-5 cursor-pointer font-montserrat font-bold text-xs md:text-sm text-gray-100 select-none list-none">
+
+              <span>Preciso de antena ou cabos para usar o serviço?</span>
+
+              <span class="text-[#e2b041] transition-transform duration-300 group-open:rotate-180 text-xs">▼</span>
+
+            </summary>
+
+            <div class="px-5 pb-5 pt-1 text-xs text-gray-300 border-t border-white/5 leading-relaxed font-inter">
+
+              Não! Você só precisa de uma conexão com a internet. O serviço funciona via aplicativo em Smart TVs, celulares, TV Box, computadores ou tablets.
+
             </div>
-          </div>
 
-          <div>
-            <h4 class="font-montserrat font-bold text-xs uppercase mb-4 tracking-wider">Fale Conosco</h4>
+          </details>
+
+
+
+          <!-- ITEM 2 -->
+
+          <details class="group bg-[#3a3b40]/60 hover:bg-[#3a3b40] rounded-xl overflow-hidden transition-all duration-300">
+
+            <summary class="flex justify-between items-center p-4 md:p-5 cursor-pointer font-montserrat font-bold text-xs md:text-sm text-gray-100 select-none list-none">
+
+              <span>Qual a velocidade de internet recomendada?</span>
+
+              <span class="text-[#e2b041] transition-transform duration-300 group-open:rotate-180 text-xs">▼</span>
+
+            </summary>
+
+            <div class="px-5 pb-5 pt-1 text-xs text-gray-300 border-t border-white/5 leading-relaxed font-inter">
+
+              Recomendamos no mínimo 10 Mega para conteúdos em HD e a partir de 30 Mega para uma experiência fluida em FHD e 4K.
+
+            </div>
+
+          </details>
+
+
+
+          <!-- ITEM 3 -->
+
+          <details class="group bg-[#3a3b40]/60 hover:bg-[#3a3b40] rounded-xl overflow-hidden transition-all duration-300">
+
+            <summary class="flex justify-between items-center p-4 md:p-5 cursor-pointer font-montserrat font-bold text-xs md:text-sm text-gray-100 select-none list-none">
+
+              <span>Existe fidelidade ou taxa de cancelamento?</span>
+
+              <span class="text-[#e2b041] transition-transform duration-300 group-open:rotate-180 text-xs">▼</span>
+
+            </summary>
+
+            <div class="px-5 pb-5 pt-1 text-xs text-gray-300 border-t border-white/5 leading-relaxed font-inter">
+
+              Zero fidelidade e sem taxas extras! Você pode cancelar ou renovar seu plano a qualquer momento sem nenhuma complicação.
+
+            </div>
+
+          </details>
+
+
+
+          <!-- ITEM 4 -->
+
+          <details class="group bg-[#3a3b40]/60 hover:bg-[#3a3b40] rounded-xl overflow-hidden transition-all duration-300">
+
+            <summary class="flex justify-between items-center p-4 md:p-5 cursor-pointer font-montserrat font-bold text-xs md:text-sm text-gray-100 select-none list-none">
+
+              <span>Quanto tempo demora para liberar meu acesso?</span>
+
+              <span class="text-[#e2b041] transition-transform duration-300 group-open:rotate-180 text-xs">▼</span>
+
+            </summary>
+
+            <div class="px-5 pb-5 pt-1 text-xs text-gray-300 border-t border-white/5 leading-relaxed font-inter">
+
+              A liberação é imediata após a confirmação do pagamento. Você receberá os dados de acesso diretamente no seu e-mail ou WhatsApp.
+
+            </div>
+
+          </details>
+
+
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+
+  <!-- SEÇÃO 3: REDES SOCIAIS -->
+
+      <div class="bg-[#21242b] py-3 border-b border-white/5 w-full">
+
+        <div class="flex justify-center items-center gap-6 text-gray-300">
+
+         
+
+          <!-- Instagram -->
+
+          <a href="https://www.instagram.com/mabledtv" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors" title="Instagram">
+
+            <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+
+          </a>
+
+
+
+          <!-- Facebook -->
+
+          <a href="https://www.facebook.com/profile.php?id=61591501409509" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors" title="Facebook">
+
+            <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+
+          </a>
+
+
+
+          <!-- TikTok -->
+
+          <a href="https://www.tiktok.com/@SEU_USUARIO" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors" title="TikTok">
+
+            <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64c.29 0 .56.04.83.12V9.3a6.33 6.33 0 0 0-1-.08A6.26 6.26 0 0 0 3 15.5 6.26 6.26 0 0 0 9.26 21.8a6.26 6.26 0 0 0 6.26-6.26V9.08a8.16 8.16 0 0 0 4.07 1.25V6.88a4.84 4.84 0 0 1-.001-.19z"/></svg>
+
+          </a>
+
+
+
+          <!-- YouTube -->
+
+          <a href="https://www.youtube.com/@SEU_CANAL" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors" title="YouTube">
+
+            <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
+
+            <path d="M23.498 6.163a3.003 3.003 0 0 0-2.11-2.11C19.517 3.545 12 3.545 12 3.545s-7.516 0-9.387.508a3.003 3.003 0 0 0-2.11 2.11C0 8.033 0 12 0 12s0 3.967.503 5.837a3.003 3.003 0 0 0 2.11 2.11c1.871.508 9.387.508 9.387.508s7.517 0 9.387-.508a3.003 3.003 0 0 0 2.11-2.11C24 15.967 24 12 24 12s0-3.967-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+
+             </svg>
+
+          </a>
+
+
+
+          <!-- E-mail / Contato -->
+
+          <a href="mailto:mabledtvorganization@gmail.com" class="hover:text-white transition-colors" title="Enviar E-mail">
+
+            <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+
+          </a>
+
+
+
+        </div>
+
+      </div>
+
+
+
+      <style>
+
+      body, html {
+
+        margin-bottom: 0 !important;
+
+        padding-bottom: 0 !important;
+
+        height: auto !important;
+
+      }
+
+      footer {
+
+        margin-bottom: 0 !important;
+
+        padding-bottom: 0 !important;
+
+      }
+
+    </style>
+
+    <!-- SEÇÃO 4: RODAPÉ COMPLETO -->
+
+    <footer class="bg-[#0e1015] text-white pt-12 pb-6 px-6 w-full font-inter">
+
+      <div class="max-w-[1100px] mx-auto grid grid-cols-1 md:grid-cols-4 gap-8 mb-12 text-xs">
+
+       
+
+        <div>
+
+          <h4 class="font-montserrat font-bold text-xs uppercase mb-4 tracking-wider">ATENDIMENTO AO CLIENTE</h4>
+
+          <ul class="space-y-2 text-gray-400">
+
+            <li><a href="#planos" class="hover:text-white">Planos</a></li>
+
+            <li><a href="#" class="hover:text-white">Como Funciona</a></li>
+
+            <li><a href="#" class="hover:text-white">Preferências de Cookies</a></li>
+
+            <li><a href="#" class="hover:text-white">Devolução e Reembolso</a></li>
+
+          </ul>
+
+        </div>
+
+
+
+        <div>
+
+          <h4 class="font-montserrat font-bold text-xs uppercase mb-4 tracking-wider">SOBRE NÓS</h4>
+
+          <ul class="space-y-2 text-gray-400">
+
+            <li><a href="sobrenos.html" class="hover:text-white">Sobre Nós</a></li>
+
+            <li><a href="#" class="hover:text-white">Política de Privacidade</a></li>
+
+            <li><a href="#" class="hover:text-white">Políticas</a></li>
+
+          </ul>
+
+        </div>
+
+
+
+    <div>
+
+      <h4 class="font-montserrat font-bold text-xs uppercase mb-4 tracking-wider">PAGAMENTO</h4>
+
+      <div class="grid grid-cols-3 gap-2 max-w-[180px]">
+
+       
+
+        <!-- VISA -->
+
+        <div class="bg-[#0000d6] rounded overflow-hidden flex items-center justify-center h-[30px]">
+
+          <img src="avatares/pagamento/visa.png" alt="Visa" style="width: 96%; height: 100%; object-fit: fill;">
+
+        </div>
+
+       
+
+        <!-- MASTERCARD -->
+
+        <div class="bg-[#eb001b] rounded overflow-hidden flex items-center justify-center h-[30px]">
+
+          <img src="avatares/pagamento/mastercard.png" alt="Mastercard" style="width: 96%; height: 100%; object-fit: fill;">
+
+        </div>
+
+       
+
+        <!-- ELO -->
+
+        <div class="bg-[#282e38] rounded overflow-hidden flex items-center justify-center h-[30px] border border-white/10">
+
+          <img src="avatares/pagamento/elo.png" alt="Elo" style="width: 96%; height: 100%; object-fit: fill;">
+
+        </div>
+
+       
+
+        <!-- AMEX -->
+
+        <div class="bg-[#006fcf] rounded overflow-hidden flex items-center justify-center h-[30px]">
+
+          <img src="avatares/pagamento/amex.png" alt="Amex" style="width: 96%; height: 100%; object-fit: fill;">
+
+        </div>
+
+       
+
+        <!-- ITAÚ -->
+
+        <div class="bg-[#002d62] rounded overflow-hidden flex items-center justify-center h-[30px]">
+
+          <img src="avatares/pagamento/itau.png" alt="Itaú" style="width: 96%; height: 100%; object-fit: fill;">
+
+        </div>
+
+       
+
+        <!-- BOLETO -->
+
+        <div class="bg-[#3b3b3b] rounded overflow-hidden flex items-center justify-center h-[30px]">
+
+          <img src="avatares/pagamento/boleto.png" alt="Boleto" style="width: 96%; height: 100%; object-fit: fill;">
+
+        </div>
+
+       
+
+        <!-- PIX (Agora igualzinho aos outros em tamanho e proporção) -->
+
+        <div class="bg-[#32bcad] rounded overflow-hidden flex items-center justify-center h-[30px]">
+
+          <img src="avatares/pagamento/pix.png" alt="Pix" style="width: 96%; height: 100%; object-fit: fill;">
+
+        </div>
+
+
+
+      </div>
+
+    </div>
+
+
+
+        <div>
+
+        <h4 class="font-montserrat font-bold text-xs uppercase mb-4 tracking-wider">Fale Conosco</h4>
+
             <ul class="space-y-2.5 text-gray-300">
-              <li class="flex items-center gap-2">
-                <span style="filter: grayscale(100%) brightness(250%) contrast(1.2);">📱</span> CNPJ:
-              </li>
-              <li class="flex items-center gap-2">
-                <span style="filter: grayscale(100%) brightness(250%) contrast(1.2);">📞</span> (12)98857-8282
-              </li>
-              <li class="flex items-center gap-2">
-                <span style="filter: grayscale(100%) brightness(250%) contrast(1.2);">✉️</span> mabledtvorganization@gmail.com
-              </li>
-            </ul>
-          </div>
+
+             <!-- CNPJ -->
+
+            <li class="flex items-center gap-2">
+
+              <span style="filter: grayscale(100%) brightness(250%) contrast(1.2);">📱</span> CNPJ:
+
+            </li>
+
+   
+
+            <!-- Telefone -->
+
+            <li class="flex items-center gap-2">
+
+              <span style="filter: grayscale(100%) brightness(250%) contrast(1.2);">📞</span> (12)98857-8282
+
+            </li>
+
+   
+
+            <!-- E-mail -->
+
+            <li class="flex items-center gap-2">
+
+              <span style="filter: grayscale(100%) brightness(250%) contrast(1.2);">✉️</span> mabledtvorganization@gmail.com
+
+            </li>
+
+          </ul>
 
         </div>
 
-        <div class="max-w-[1100px] mx-auto border-t border-white/5 pt-3 pb-0 flex flex-col items-start" style="margin-bottom: 0 !important; padding-bottom: 0 !important;">
-          <div class="mb-3">
-            <img src="avatares/logo site/logo.png" alt="Mabled TV" style="height: 30px; width: auto; display: block;">
-          </div>
-          <div class="w-full text-center text-[10px] text-gray-500 font-inter" style="margin: 0 !important; padding: 0 0 10px 0 !important; line-height: 1;">
-            Copyright © <span class="font-bold">Mabled Entertainment. Todos os direitos reservados.</span>
-          </div>
+
+
+      </div>
+
+
+
+      <div class="max-w-[1100px] mx-auto border-t border-white/5 pt-3 pb-0 flex flex-col items-start" style="margin-bottom: 0 !important; padding-bottom: 0 !important;">
+
+
+
+        <div class="mb-3">
+
+          <img src="avatares/logo site/logo.png" alt="Mabled TV" style="height: 30px; width: auto; display: block;">
+
         </div>
-      </footer>
+
+       
+
+        <div class="w-full text-center text-[10px] text-gray-500 font-inter" style="margin: 0 !important; padding: 0 0 10px 0 !important; line-height: 1;">
+
+          Copyright © <span class="font-bold">Mabled Entertainment. Todos os direitos reservados.</span>
+
+        </div>
+
+
+
+      </div>
+
+    </footer>
+
   </div>
 
+
+
   <script src="banners/javascriptbanner/banner.js"></script>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <script src="javalogin/auth-guard.js"></script>
 
+
+
 </body>
+
 </html>
