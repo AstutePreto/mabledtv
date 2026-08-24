@@ -26,6 +26,8 @@
       flex-direction: column;
       min-height: 100vh;
       overflow-y: auto !important;
+      /* Garante que o fundo preto acompanhe a largura total se houver scroll */
+      min-width: 1300px; 
     }
 
     /* --- BARRA TOPO ESTÁTICA --- */
@@ -44,6 +46,7 @@
       top: 0; 
       left: 0;
       width: 100%;
+      min-width: 1300px; /* Mantém o alinhamento do topo com o corpo */
       height: 50px; 
       z-index: 10;
       display: flex;
@@ -85,7 +88,7 @@
       margin: 0 auto !important;
     }
 
-    /* 📌 ATUALIZADO: Estilo da barra de pesquisa dentro do Menu Lateral (Igual à foto) */
+    /* Estilo da barra de pesquisa dentro do Menu Lateral */
     .search-bar {
       width: 100%;
       padding: 10px 14px;
@@ -129,10 +132,12 @@
       margin-left: 0 !important;    
     }
 
-    /* --- CONTEÚDO PRINCIPAL --- */
+    /* --- CONTEÚDO PRINCIPAL (TRAVADO LADO A LADO) --- */
     .main-layout-wrapper {
       display: flex;
+      flex-direction: row !important; /* Força ficar sempre lado a lado */
       width: 100%;
+      max-width: 100%;
       padding: 0 30px;
       margin-top: 50px;
       box-sizing: border-box;
@@ -151,7 +156,7 @@
       height: 690px !important;
       max-height: 690px !important;
       overflow-y: auto !important;
-      flex-shrink: 0;
+      flex-shrink: 0; /* Impede o menu de encolher */
     }
 
     .sidebar-title {
@@ -266,6 +271,7 @@
 
     .channels-grid {
       display: grid;
+      /* Mantém o grid de canais flexível mas estruturado de forma consistente */
       grid-template-columns: repeat(auto-fill, minmax(95px, 1fr));
       gap: 10px !important;
       padding-bottom: 15px;
@@ -316,7 +322,7 @@
       display: none;
     }
 
-    /* 🚀 COMPORTAMENTO DO CANAL ATIVO: Perfeito e alinhado */
+    /* COMPORTAMENTO DO CANAL ATIVO: Travado sempre em 3 colunas */
     .channel-item.active {
       grid-column: span 3 !important; 
       aspect-ratio: auto !important;  
@@ -347,7 +353,7 @@
       align-items: flex-start !important;
       text-align: left !important;
       flex: 1 !important;
-      height: 100% !important;        
+      height: 100% !important;         
       max-height: 71px !important;    
       overflow-y: auto !important;     
       scrollbar-width: none !important; 
@@ -435,20 +441,7 @@
       margin-top: 50px;
     }
 
-    @media (max-width: 1024px) {
-      .main-layout-wrapper {
-        flex-direction: column;
-        padding: 0 15px;
-      }
-      .sidebar-container, .right-sidebar {
-        width: 100%;
-        margin: 20px 0 0 0 !important;
-      }
-      .channel-item.active {
-        grid-column: span 1 !important; 
-        flex-direction: column !important;
-      }
-    }
+    /* 📌 REMOVIDO: O bloco @media (max-width: 1024px) que quebrava o layout foi apagado para travar o formato desktop */
   </style>
 </head>
 <body>
@@ -462,7 +455,6 @@
     </a>
 
     <div class="nav-links">
-      <!-- 🔄 REMOVIDO DAQUI: O input de pesquisa saiu do topo -->
       <a href="planos.html" class="link-planos">Planos</a>
       <a href="comofunciona.html" class="link-funciona">Como funciona?</a>
       <a href="sobrenos.html" class="link-sobre">Sobre nós</a>
@@ -477,19 +469,18 @@
   <!-- CONTAINER DO CORPO -->
   <div class="main-layout-wrapper">
 
-<!-- 1. SIDEBAR ESQUERDA -->
+    <!-- 1. SIDEBAR ESQUERDA -->
     <div class="sidebar-container">
       <div class="sidebar-title">Menu</div>
       
-      <!-- Caixa mãe que segura o fundo preto fixo e o arredondamento perfeito -->
       <div class="sidebar-wrapper" style="background-color: #0f0f0f; border-radius: 20px; padding: 16px 12px; display: flex; flex-direction: column; gap: 14px; flex: 1; overflow: hidden; height: 100%;">
         
         <!-- Pesquisa fixa no topo -->
-        <div style="width: 90%; padding: 0 10 px; margin-bottom: -9px !important;">
+        <div style="width: 100%; margin-bottom: -9px !important;">
           <input type="text" id="searchInput" class="search-bar" placeholder="🔍 Pesquisar..." style="width: 100%; padding: 5px 14px; border-radius: 25px; border: 1px solid #232325; background-color: #161719; color: #fff; outline: none; font-size: 13px; font-weight: 500; margin: 0 !important; box-sizing: border-box;">
         </div>
         
-        <!-- Caixa de rolagem invisível (o JS joga os botões aqui dentro) -->
+        <!-- Caixa de rolagem invisível -->
         <div class="sidebar" id="categoriesSidebar">
           <button id="btnTodos" class="category-btn active">Todos os Canais</button>
         </div>
@@ -509,7 +500,7 @@
       </div>
 
       <!-- Caixa de Canais com Rolagem Interna -->
-       <div class="sidebar-title" style="padding-left: 0; margin-bottom: 10px; margin-top: 15px;">Canais</div>
+      <div class="sidebar-title" style="padding-left: 0; margin-bottom: 10px; margin-top: 15px;">Canais</div>
       <div class="channels-box">
         <div id="channelsList" class="channels-grid">
           <div class="col-span-full text-center text-gray-700 font-medium py-12">
